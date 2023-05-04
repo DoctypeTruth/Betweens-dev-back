@@ -1,7 +1,7 @@
 const mongoose = require('../database');
 
-const Specialization = require('./specialization');
-const Technology = require('./technology');
+// const Specialization = require('./specialization');
+// const Technology = require('./technology');
 
 const userSchema = new mongoose.Schema({
   pseudo: {

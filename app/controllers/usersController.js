@@ -1,4 +1,6 @@
 const User = require('../models/user.js');
+// import lookup pipeline to agregate specialization and technology collections to users
+const speTechnoLookup = require('../utils/speTechnoLookup')
 
 const usersController = {
   /**
@@ -7,27 +9,9 @@ const usersController = {
   getAllUsers: async (_req, res) => {
     console.log("je lance la route get all users")
     try {
-      const users = await User.aggregate([
-        {
-          $lookup: {
-            from: 'specialization',
-            localField: 'specialization._id',
-            foreignField: '_id',
-            as: 'specialization'
-          }
-        },
-        {
-          $unwind: '$specialization'
-        },
-        {
-          $lookup: {
-            from: 'technology',
-            localField: 'technology._id',
-            foreignField: '_id',
-            as: 'technology'
-          }
-        },
-      ]);
+      // The aggregate operation allow to process data operations on one a or
+      // multiple collections
+      const users = await User.aggregate(speTechnoLookup);
 
       if ((users.length > 0) && (!res.headersSent)) {
         console.log('Users retrieved successfully');

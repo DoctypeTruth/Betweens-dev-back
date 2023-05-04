@@ -18,7 +18,15 @@ const usersController = {
         },
         {
           $unwind: '$specialization'
-        }
+        },
+        {
+          $lookup: {
+            from: 'technology',
+            localField: 'technology._id',
+            foreignField: '_id',
+            as: 'technology'
+          }
+        },
       ]);
 
       if ((users.length > 0) && (!res.headersSent)) {

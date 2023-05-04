@@ -4,10 +4,23 @@ const usersController = {
   /**
    * Get all users function
    */
-  getAll: async (_req, res) => {
+  getAllUsers: async (_req, res) => {
     console.log("je lance la route get all users")
     try {
-      const users = await User.find();
+      const users = await User.aggregate([
+        {
+          $lookup: {
+            from: 'specialization',
+            localField: 'specialization._id',
+            foreignField: '_id',
+            as: 'specialization'
+          }
+        },
+        {
+          $unwind: '$specialization'
+        }
+      ]);
+
       if ((users.length > 0) && (!res.headersSent)) {
         console.log('Users retrieved successfully');
         res.status(200).json(users);
@@ -20,7 +33,8 @@ const usersController = {
         res.status(500).json({ error: 'Failed to get users.' });
       }
     }
-  }
+  },
+
 }
 
 module.exports = usersController

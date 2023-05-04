@@ -1,5 +1,7 @@
-// const mongoose = require('mongoose');
 const mongoose = require('../database');
+
+const Specialization = require('./specialization');
+
 const userSchema = new mongoose.Schema({
   pseudo: {
     type: String,
@@ -29,12 +31,10 @@ const userSchema = new mongoose.Schema({
     name: String
   },
   specialization: {
-    _id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Specialization'
-    },
-    name: String
-  }
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Specialization'
+  },
+  name: String
 });
 
 const User = mongoose.model('User', userSchema, 'user');

@@ -12,24 +12,40 @@ const usersController = {
   getAllUsers: async (_req, res) => {
     console.log("je lance la route get all users")
     try {
-      // The aggregate operation allow to process data operations on one a or
-      // multiple collections
+      // The aggregate operation allow to process data operations on one a or multiple
+      // collection
       const users = await User.aggregate(speTechnoLookup);
 
-      if ((users.length > 0) && (!res.headersSent)) {
+      if (users.length > 0) {
         console.log('Users retrieved successfully');
         res.status(200).json(users);
       } else {
         res.status(404).json({ error: 'No users found.' });
       }
     } catch (error) {
-      if (!res.headersSent) {
-        console.error('Error getting users:', error);
-        res.status(500).json({ error: 'Failed to get users.' });
-      }
+      console.error('Error getting users:', error);
+      res.status(500).json({ error: 'Failed to get users.' });
     }
   },
 
+  // Here the function allow us to retrieve users by their specialization
+  getUsersBySpecilization: async (req, res) => {
+    try {
+      const specialization = req.params.specialization
+      // $match allow to filter with aggregate 
+      const users = await User.aggregate([...speTechnoLookup, { $match: { "specialization.name": specialization } }]);
+
+      if (users.length === 0) {
+        res.status(404).json({ error: 'No users found.' });
+      } else {
+        res.status(200).json(users);
+      }
+    }
+    catch (error) {
+      console.error('Error getting users:', error);
+      res.status(500).json({ error: 'Failed to get users.' });
+    }
+  },
 
   createUser: async (req, res) => {
     try {

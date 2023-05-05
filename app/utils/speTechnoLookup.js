@@ -1,5 +1,6 @@
 const speTechnoLookup = [
   {
+    // $lookup joint collection.
     $lookup: {
       from: 'specialization',
       localField: 'specialization._id',
@@ -8,9 +9,11 @@ const speTechnoLookup = [
     }
   },
   {
+    // By default it will retrieve in array, unwind remove it.
     $unwind: '$specialization'
   },
   {
+
     $lookup: {
       from: 'technology',
       localField: 'technology._id',

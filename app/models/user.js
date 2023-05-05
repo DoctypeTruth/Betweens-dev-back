@@ -1,9 +1,11 @@
 const mongoose = require('../database');
 
-// const Specialization = require('./specialization');
-// const Technology = require('./technology');
-
 const userSchema = new mongoose.Schema({
+  _id: {
+    type: String,
+    default: () => Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
+    unique: true
+  },
   pseudo: {
     type: String,
     required: true,
@@ -26,17 +28,22 @@ const userSchema = new mongoose.Schema({
   goals: [String],
   technology: {
     _id: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.String,
       ref: 'Technology'
     },
     name: String
   },
   specialization: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Specialization'
-  },
-  name: String
-});
+    _id: {
+      type: mongoose.Schema.Types.String,
+      ref: 'Specialization'
+    },
+    name: String
+  }
+},
+  {
+    autoIndex: false
+  });
 
 const User = mongoose.model('User', userSchema, 'user');
 

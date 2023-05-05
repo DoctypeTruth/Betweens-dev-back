@@ -17,7 +17,8 @@ const speTechnoLookup = [
       foreignField: '_id',
       as: 'technology'
     }
-  }
+  },
+
 ];
 
 module.exports = speTechnoLookup;

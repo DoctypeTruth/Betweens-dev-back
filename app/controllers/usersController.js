@@ -52,6 +52,11 @@ const usersController = {
       const { pseudo, email, city, picture, password, description, status, level, goals, technology, specialization } = req.body;
 
 
+      // if (req.params.id) {
+      //   console.log("udpdate mode")
+      //   return;
+      // }
+
       // Check if the username or email already exist
       let user = await User.findOne({ $or: [{ pseudo }, { email }] });
       if (user) {
@@ -61,13 +66,11 @@ const usersController = {
       const technologyInfos = await Technology.findOne({ name: technology });
       const specializationInfos = await Specialization.findOne({ name: specialization });
 
-
       // Hash the password
       const saltRounds = 10;
       const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-      // Create a new user
-      user = new User({
+      const userData = {
         pseudo,
         email,
         city,
@@ -83,7 +86,10 @@ const usersController = {
         specialization: {
           _id: specializationInfos._id,
         }
-      });
+      }
+
+      // Create a new user
+      user = new User(userData);
 
       await user.save();
       res.status(201).json({ message: "user created", user });
@@ -94,6 +100,44 @@ const usersController = {
     }
   },
 
+  updateUser: async (req, res) => {
+
+    const { pseudo, email, city, picture, password, description, status, level, goals, technology, specialization } = req.body;
+    // Todo : Add input value test
+
+    try {
+      const userId = req.params.id;
+      const updateData = {
+        pseudo,
+        email,
+        city,
+        picture,
+        // password: hashedPassword,
+        description,
+        status,
+        level,
+        goals,
+        // technology: {
+        //   _id: technologyInfos._id,
+        // },
+        // specialization: {
+        //   _id: specializationInfos._id,
+        // }
+      }
+      const updatedUser = await User.findOneAndUpdate({ _id: userId }, { $set: updateData }, { new: true });
+      if ((updatedUser) && (!res.headersSent)) {
+        console.log('User updated successfully:', updatedUser);
+        res.status(200).json(updatedUser);
+      } else {
+        res.status(404).json({ error: 'User not found.' });
+      }
+    } catch (error) {
+      if (!res.headersSent) {
+        console.error('Error updating user:', error);
+        res.status(500).json({ error: 'Failed to update user.' });
+      }
+    }
+  },
 
   deleteUser: async (req, res) => {
     try {

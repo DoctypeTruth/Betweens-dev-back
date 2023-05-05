@@ -13,7 +13,6 @@ const speTechnoLookup = [
     $unwind: '$specialization'
   },
   {
-
     $lookup: {
       from: 'technology',
       localField: 'technology._id',
@@ -21,7 +20,6 @@ const speTechnoLookup = [
       as: 'technology'
     }
   },
-
 ];
 
 module.exports = speTechnoLookup;

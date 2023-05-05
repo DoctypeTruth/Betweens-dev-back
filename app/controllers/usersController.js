@@ -31,9 +31,9 @@ const usersController = {
   // Here the function allow us to retrieve users by their specialization
   getUsersBySpecilization: async (req, res) => {
     try {
-      const specialization = req.params.specialization
+      const specialization = req.params.slug
       // $match allow to filter with aggregate 
-      const users = await User.aggregate([...speTechnoLookup, { $match: { "specialization.name": specialization } }]);
+      const users = await User.aggregate([...speTechnoLookup, { $match: { "specialization.slug": specialization } }]);
 
       if (users.length === 0) {
         res.status(404).json({ error: 'No users found.' });
@@ -51,7 +51,6 @@ const usersController = {
     try {
       const { pseudo, email, city, picture, password, description, status, level, goals, technology, specialization } = req.body;
 
-      console.log("req.body", req.body)
 
       // Check if the username or email already exist
       let user = await User.findOne({ $or: [{ pseudo }, { email }] });
@@ -96,6 +95,21 @@ const usersController = {
   },
 
 
+  deleteUser: async (req, res) => {
+    try {
+      const userId = req.params.id
+      const result = await User.deleteOne({ _id: userId });
+      if (result.deletedCount === 1) {
+        console.log('User successfully deleted');
+        res.status(204).json();
+      } else {
+        res.status(404).json({ error: 'User not found.' });
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      res.status(500).json({ error: 'Failed to delete the user.' });
+    }
+  }
 }
 
 module.exports = usersController

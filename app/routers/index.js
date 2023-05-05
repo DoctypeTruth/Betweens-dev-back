@@ -6,8 +6,9 @@ const usersController = require('../controllers/usersController');
 
 /* GET home page. */
 router.get('/all-users', usersController.getAllUsers);
-router.get('/all-users-by-spe/:specialization', usersController.getUsersBySpecilization);
+router.get('/all-users-by-spe/:slug', usersController.getUsersBySpecilization);
 router.post('/create-user', usersController.createUser);
+router.delete('/delete-user/:id', usersController.deleteUser);
 
 // router.get('/all-users-with-spe', usersController.getUsersWithSpecialization);
 

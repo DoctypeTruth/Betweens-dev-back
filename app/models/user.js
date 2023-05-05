@@ -38,7 +38,8 @@ const userSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.String,
       ref: 'Specialization'
     },
-    name: String
+    name: String,
+    slug: String
   }
 },
   {

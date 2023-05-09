@@ -86,7 +86,7 @@ const usersController = {
         accepted: false
       });
       await match.save();
-      // On ajoute le match à l'utilisateur qui l'a demandé
+      // On ajoute le match à l'utilisateur qui l'a demandéAdded function to create a match (total match between 2 users not available)"
       await usersController.addMatchToUser(userId, match._id);
       // On ajout le match en pending à l'utilisateur proposé
       await usersController.addPendingMatchToUser(matchUserId, userId, match._id);

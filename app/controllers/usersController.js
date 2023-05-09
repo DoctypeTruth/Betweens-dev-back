@@ -1,6 +1,7 @@
 const User = require('../models/user.js');
 const Technology = require('../models/technology.js');
 const Specialization = require('../models/specialization.js');
+const Match = require('../models/match.js');
 const bcrypt = require('bcrypt');
 // import lookup pipeline to agregate specialization and technology collections to users
 const speTechnoLookup = require('../utils/speTechnoLookup')
@@ -49,6 +50,130 @@ const usersController = {
       res.status(500).json({ error: 'Failed to get users.' });
     }
   },
+
+  createMatch: async (req, res) => {
+    // const { userId } = req.user; // id de l'utilisateur connecté
+    const userId = "78xzpouz1ua8c9n511v1ed";
+    const { matchUserId } = req.params; // id de l'utilisateur avec qui on veut matcher
+
+    try {
+      // Vérifier si l'utilisateur connecté a déjà matché avec l'utilisateur proposé
+      // const existingMatch = await Match.findOne({
+      //   $or: [
+      //     { user1_id: userId, user2_id: matchUserId },
+      //     { user1_id: matchUserId, user2_id: userId }
+      //   ]
+      // });
+      // if (existingMatch) {
+      //   return res.status(400).json({ error: "Vous avez déjà matché avec cet utilisateur." });
+      // }
+
+      // Vérifier s'il y a un pending match pour l'utilisateur proposé
+      const matchPending = await usersController.checkPendingMatch(userId, matchUserId);
+      console.log("matchPending", matchPending)
+      if (matchPending) {
+        // S'il y a un match en attente, le valider et le supprimer du pending
+        // await usersController.removePendingMatchFromUser(matchUserId, matchPending._id);
+        await Match.findByIdAndUpdate(matchPending._id, { accepted: true });
+        await usersController.addMatchToUser(matchUserId, matchPending._id);
+        return res.status(200).json({ message: "C'est un match total, vous pouvez à présent commencer à discuter !" });
+      }
+
+      // Créer un nouveau match
+      const match = new Match({
+        user1_id: userId,
+        user2_id: matchUserId,
+        created_at: new Date(),
+        accepted: false
+      });
+      await match.save();
+
+      await usersController.addMatchToUser(userId, match._id);
+
+      await usersController.addPendingMatchToUser(matchUserId, userId);
+
+      return res.status(200).json({ message: "Match créé avec succès !" });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: "Erreur serveur lors de la création du match." });
+    }
+  },
+
+  addMatchToUser: async (userId, matchId) => {
+    try {
+      const user = await User.findById(userId);
+      if (!user) {
+        throw new Error("Utilisateur introuvable");
+      }
+
+      if (!Array.isArray(user.match)) {
+        // Create table if not exist
+        user.match = [];
+      }
+
+      user.match.push({ _id: matchId });
+      await user.save();
+    } catch (error) {
+      console.error(error);
+      throw new Error("Erreur serveur lors de la mise à jour de l'utilisateur");
+    }
+  },
+
+  addPendingMatchToUser: async (matchUserId, userId) => {
+    try {
+      const user = await User.findById(matchUserId);
+      if (!user) {
+        throw new Error("Utilisateur introuvable");
+      }
+
+      if (!Array.isArray(user.pendingMatch)) {
+        // Create table if not exist
+        user.pendingMatch = [];
+      }
+
+      user.pendingMatch.push({ _id: userId });
+      await user.save();
+    } catch (error) {
+      console.error(error);
+      throw new Error("Erreur serveur lors de la mise à jour de l'utilisateur");
+    }
+  },
+
+  checkPendingMatch: async (userId, matchUserId) => {
+
+    try {
+      // Vérifier s'il y a un match en attente pour l'utilisateur proposé
+      const user = await User.findById(userId);
+      console.log('matchUserId', matchUserId)
+      if (user.pendingMatch.length > 0) {
+        // Trouver le match en attente pour l'utilisateur proposé
+        const pendingMatchIndex = user.pendingMatch.findIndex(
+          (pending) => pending._id === matchUserId
+        );
+        console.log('pendingMatchIndex', pendingMatchIndex);
+        if (pendingMatchIndex !== -1) {
+          // Mettre à jour le match et le supprimer du tableau pendingMatch de l'utilisateur
+          const pendingMatchId = user.pendingMatch[pendingMatchIndex]._id;
+          await Match.findByIdAndUpdate(pendingMatchId, { accepted: true });
+          user.pendingMatch.splice(pendingMatchIndex, 1);
+          await user.save();
+
+          // Récupérer le match mis à jour
+          const updatedMatch = await Match.findById(pendingMatchId);
+
+          return updatedMatch;
+        }
+      }
+
+      // Si aucun match en attente, retourner null
+      return null;
+    } catch (error) {
+      console.error(error);
+      throw new Error("Erreur serveur lors de la vérification du match en attente.");
+    }
+  },
+
+
 
   createUser: async (req, res) => {
     try {

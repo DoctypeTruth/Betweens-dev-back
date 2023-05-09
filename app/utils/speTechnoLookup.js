@@ -20,6 +20,14 @@ const speTechnoLookup = [
       as: 'technology'
     }
   },
+  {
+    $lookup: {
+      from: 'match',
+      localField: 'match._id',
+      foreignField: '_id',
+      as: 'match'
+    }
+  },
 ];
 
 module.exports = speTechnoLookup;

@@ -40,7 +40,23 @@ const userSchema = new mongoose.Schema({
     },
     name: String,
     slug: String
-  }
+  },
+  match: [
+    {
+      _id: {
+        type: mongoose.Schema.Types.String,
+        ref: 'Match'
+      }
+    }
+  ],
+  pendingMatch: [
+    {
+      _id: {
+        type: mongoose.Schema.Types.String,
+        ref: 'Match'
+      }
+    }
+  ]
 },
   {
     autoIndex: false

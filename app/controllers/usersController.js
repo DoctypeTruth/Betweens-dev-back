@@ -53,7 +53,7 @@ const usersController = {
 
   createMatch: async (req, res) => {
     // const { userId } = req.user; // id de l'utilisateur connecté
-    const userId = "78xzpouz1ua8c9n511v1ed";
+    const userId = "78xzpouz1ua8c9n511v1ed"; // Temporairement manuel, sera récupéré dans la session
     const { matchUserId } = req.params; // id de l'utilisateur avec qui on veut matcher
 
     try {
@@ -68,18 +68,17 @@ const usersController = {
       //   return res.status(400).json({ error: "Vous avez déjà matché avec cet utilisateur." });
       // }
 
-      // Vérifier s'il y a un pending match pour l'utilisateur proposé
+      // on vérifie si il y a un pending match pour l'utilisateur proposé
       const matchPending = await usersController.checkPendingMatch(userId, matchUserId);
-      console.log("matchPending", matchPending)
+      // Si il y a un match en attente on le valide
       if (matchPending) {
-        // S'il y a un match en attente, le valider et le supprimer du pending
-        // await usersController.removePendingMatchFromUser(matchUserId, matchPending._id);
         await Match.findByIdAndUpdate(matchPending._id, { accepted: true });
-        await usersController.addMatchToUser(matchUserId, matchPending._id);
+        // On ajoute le match à l'utilisateur proposé
+        await usersController.addMatchToUser(userId, matchPending._id);
         return res.status(200).json({ message: "C'est un match total, vous pouvez à présent commencer à discuter !" });
       }
 
-      // Créer un nouveau match
+      // Sinon on créé un nouveau match
       const match = new Match({
         user1_id: userId,
         user2_id: matchUserId,
@@ -87,12 +86,13 @@ const usersController = {
         accepted: false
       });
       await match.save();
-
+      // On ajoute le match à l'utilisateur qui l'a demandé
       await usersController.addMatchToUser(userId, match._id);
-
-      await usersController.addPendingMatchToUser(matchUserId, userId);
+      // On ajout le match en pending à l'utilisateur proposé
+      await usersController.addPendingMatchToUser(matchUserId, userId, match._id);
 
       return res.status(200).json({ message: "Match créé avec succès !" });
+
     } catch (error) {
       console.error(error);
       return res.status(500).json({ error: "Erreur serveur lors de la création du match." });
@@ -105,21 +105,22 @@ const usersController = {
       if (!user) {
         throw new Error("Utilisateur introuvable");
       }
-
       if (!Array.isArray(user.match)) {
-        // Create table if not exist
+        // Create match array  if not exist
         user.match = [];
       }
-
+      // On rajoute le match id dans le tableau
       user.match.push({ _id: matchId });
+
       await user.save();
+
     } catch (error) {
       console.error(error);
       throw new Error("Erreur serveur lors de la mise à jour de l'utilisateur");
     }
   },
 
-  addPendingMatchToUser: async (matchUserId, userId) => {
+  addPendingMatchToUser: async (matchUserId, userId, matchId) => {
     try {
       const user = await User.findById(matchUserId);
       if (!user) {
@@ -127,12 +128,13 @@ const usersController = {
       }
 
       if (!Array.isArray(user.pendingMatch)) {
-        // Create table if not exist
+        // Create pendingMatch Array if not exist
         user.pendingMatch = [];
       }
-
-      user.pendingMatch.push({ _id: userId });
+      // On ajout l'id de l'utilisateur proposé ainsi que le matchId dans le tableau
+      user.pendingMatch.push({ _id: userId, matchId });
       await user.save();
+
     } catch (error) {
       console.error(error);
       throw new Error("Erreur serveur lors de la mise à jour de l'utilisateur");
@@ -144,21 +146,26 @@ const usersController = {
     try {
       // Vérifier s'il y a un match en attente pour l'utilisateur proposé
       const user = await User.findById(userId);
-      console.log('matchUserId', matchUserId)
       if (user.pendingMatch.length > 0) {
         // Trouver le match en attente pour l'utilisateur proposé
+
+        // On cherche le pendingMatch qui nous intérésse
         const pendingMatchIndex = user.pendingMatch.findIndex(
+          // On compare l'id de l'utilisateur de le pending et l'id de l'utilisateur avec qui on veut matcher
           (pending) => pending._id === matchUserId
         );
-        console.log('pendingMatchIndex', pendingMatchIndex);
+        // Si il y a bien un pendingMatch
         if (pendingMatchIndex !== -1) {
-          // Mettre à jour le match et le supprimer du tableau pendingMatch de l'utilisateur
-          const pendingMatchId = user.pendingMatch[pendingMatchIndex]._id;
+          // on met à jour le match 
+          const pendingMatchId = user.pendingMatch[pendingMatchIndex].matchId;
+          // On modifie la valeur de accepted à  true
           await Match.findByIdAndUpdate(pendingMatchId, { accepted: true });
+          // On supprime le match du pending
           user.pendingMatch.splice(pendingMatchIndex, 1);
+          // On sauvegarde les données de l'utilisateur
           await user.save();
 
-          // Récupérer le match mis à jour
+          // On récupère le match mis à jour et on le retourne
           const updatedMatch = await Match.findById(pendingMatchId);
 
           return updatedMatch;
@@ -167,6 +174,7 @@ const usersController = {
 
       // Si aucun match en attente, retourner null
       return null;
+
     } catch (error) {
       console.error(error);
       throw new Error("Erreur serveur lors de la vérification du match en attente.");

@@ -51,7 +51,8 @@ const userSchema = new mongoose.Schema({
   ],
   pendingMatch: [
     {
-      _id: {
+      _id: String,
+      matchId: {
         type: mongoose.Schema.Types.String,
         ref: 'Match'
       }

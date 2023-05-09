@@ -4,7 +4,7 @@ const usersController = require('../controllers/usersController');
 
 /* GET home page. */
 router.get('/all-users', usersController.getAllUsers);
-router.get('/all-users-by-spe/:slug', usersController.getUsersBySpecilization);
+router.get('/all-users-by-spe/:slug', usersController.getOneUserBySpecilization);
 router.post('/create-user', usersController.createUser);
 router.patch('/update-user/:id', usersController.updateUser);
 router.delete('/delete-user/:id', usersController.deleteUser);

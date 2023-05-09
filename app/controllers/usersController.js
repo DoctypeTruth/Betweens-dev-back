@@ -28,20 +28,23 @@ const usersController = {
     }
   },
 
-  // Here the function allow us to retrieve users by their specialization
-  getUsersBySpecilization: async (req, res) => {
+  // Here the function allow us to retrieve one user by their specialization
+  getOneUserBySpecilization: async (req, res) => {
     try {
-      const specialization = req.params.slug
-      // $match allow to filter with aggregate 
-      const users = await User.aggregate([...speTechnoLookup, { $match: { "specialization.slug": specialization } }]);
+      const specialization = req.params.slug;
+      const users = await User.aggregate([
+        ...speTechnoLookup,
+        { $match: { "specialization.slug": specialization } },
+        { $sample: { size: 1 } } // get a single random document
+      ]);
 
       if (users.length === 0) {
         res.status(404).json({ error: 'No users found.' });
       } else {
-        res.status(200).json(users);
+        // Returns the first (and single) document in the array
+        res.status(200).json(users[0]);
       }
-    }
-    catch (error) {
+    } catch (error) {
       console.error('Error getting users:', error);
       res.status(500).json({ error: 'Failed to get users.' });
     }
@@ -62,6 +65,7 @@ const usersController = {
       if (user) {
         return res.status(400).json({ message: 'Username or email already exist' });
       }
+
 
       const technologyInfos = await Technology.findOne({ name: technology });
       const specializationInfos = await Specialization.findOne({ name: specialization });

@@ -9,12 +9,13 @@ router.post('/login', authController.login)
 
 /* Users API page. */
 router.get('/all-users', authMiddleware, usersController.getAllUsers);
-router.get('/all-users-by-spe/:slug', usersController.getOneUserBySpecilization);
-router.post('/create-match/:matchUserId', usersController.createMatch);
-router.post('/create-user', usersController.createUser);
-router.patch('/update-user/:id', usersController.updateUser);
-router.delete('/delete-user/:id', usersController.deleteUser);
+router.get('/all-users-by-spe/:slug', authMiddleware, usersController.getOneUserBySpecilization);
 
-// router.get('/all-users-with-spe', usersController.getUsersWithSpecialization);
+router.post('/create-match/:matchUserId', authMiddleware, usersController.createMatch);
+
+router.post('/create-user', usersController.createUser);
+router.patch('/update-user/:id', authMiddleware, usersController.updateUser);
+router.delete('/delete-user/:id', authMiddleware, usersController.deleteUser);
+
 
 module.exports = router;

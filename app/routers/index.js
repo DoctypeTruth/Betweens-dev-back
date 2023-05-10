@@ -13,8 +13,6 @@ router.post('/login', authController.login)
 /* Users API page. */
 router.get('/all-users', authMiddleware, usersController.getAllUsers);
 router.get('/all-users-by-spe/:slug', authMiddleware, usersController.getOneUserBySpecilization);
-
-// Voir pour remplacer cette route par put ?
 router.post('/create-match/:matchUserId', authMiddleware, usersController.createMatch);
 
 router.post('/create-user', usersController.createUser);

@@ -10,6 +10,7 @@ const PORT = process.env.PORT || 5001;
 
 const bodyParser = multer();
 
+// Home route
 app.get('/', (_req, res) => {
   res.send('Api betweenDevs Launched')
 })

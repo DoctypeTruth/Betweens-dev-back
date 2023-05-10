@@ -20,6 +20,3 @@
 
 Server Configuration
 
-
-
-git checkout -b feat/get-technology 565829b5c396579b499978c0c51fa00a7e1fd7dd

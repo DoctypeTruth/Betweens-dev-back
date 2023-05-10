@@ -20,7 +20,7 @@ const authController = {
       const token = generateJwt(user);
 
       // We send the JWT token in the response with status 200
-      res.status(200).json({ token });
+      res.status(200).json({ token, userId: user._id });
 
     } catch (error) {
       console.error(error);

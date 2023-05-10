@@ -26,7 +26,7 @@ const usersController = {
       }
     } catch (error) {
       console.error('Error getting users:', error);
-      res.status(500).json({ error: 'Failed to get users.' });
+      res.status(500).json({ error: 'Failed to get all users.' });
     }
   },
 
@@ -48,7 +48,7 @@ const usersController = {
       }
     } catch (error) {
       console.error('Error getting users:', error);
-      res.status(500).json({ error: 'Failed to get users.' });
+      res.status(500).json({ error: 'Failed to get user by specialization.' });
     }
   },
 
@@ -71,17 +71,17 @@ const usersController = {
       //   return res.status(400).json({ error: "Vous avez déjà matché avec cet utilisateur." });
       // }
 
-      // on vérifie si il y a un pending match pour l'utilisateur proposé
+      // We check if there is a pending match for the proposed user
       const matchPending = await usersController.checkPendingMatch(userId, matchUserId);
-      // Si il y a un match en attente on le valide
+      // If there is a pending match we validate it
       if (matchPending) {
         await Match.findByIdAndUpdate(matchPending._id, { accepted: true });
-        // On ajoute le match à l'utilisateur proposé
+        // We add the match to the proposed user
         await usersController.addMatchToUser(userId, matchPending._id);
         return res.status(200).json({ message: "C'est un match total, vous pouvez à présent commencer à discuter !" });
       }
 
-      // Sinon on créé un nouveau match
+      // Else we create a new match
       const match = new Match({
         user1_id: userId,
         user2_id: matchUserId,
@@ -89,9 +89,9 @@ const usersController = {
         accepted: false
       });
       await match.save();
-      // On ajoute le match à l'utilisateur qui l'a demandé
+      // We add the match to the user who requested it
       await usersController.addMatchToUser(userId, match._id);
-      // On ajoute le match en pending à l'utilisateur proposé
+      // We add the match in pending to the proposed user
       await usersController.addPendingMatchToUser(matchUserId, userId, match._id);
 
       return res.status(200).json({ message: "Match créé avec succès !" });
@@ -112,7 +112,7 @@ const usersController = {
         // Create match array  if not exist
         user.match = [];
       }
-      // On rajoute le match id dans le tableau
+      // We add the matchId to the array
       user.match.push({ _id: matchId });
 
       await user.save();
@@ -134,7 +134,7 @@ const usersController = {
         // Create pendingMatch Array if not exist
         user.pendingMatch = [];
       }
-      // On ajoute l'id de l'utilisateur proposé ainsi que le matchId dans le tableau
+      // We add the userId and the matchId to the array
       user.pendingMatch.push({ _id: userId, matchId });
       await user.save();
 
@@ -147,34 +147,36 @@ const usersController = {
   checkPendingMatch: async (userId, matchUserId) => {
 
     try {
-      // On vérifie si il y a un match en attente pour l'utilisateur proposé
+
+      // We check if there is a pending match for the proposed user
       const user = await User.findById(userId);
       if (user.pendingMatch.length > 0) {
 
-        // On cherche le pendingMatch qui nous intérésse et on récupère l'index
+        // We search for the pendingMatch we are interested in and we get the index
         const pendingMatchIndex = user.pendingMatch.findIndex(
-          // On compare l'id de l'utilisateur dans le pending et l'id de l'utilisateur avec qui on veut matcher
+
+          // We compare the id of the user in the pending and the id of the user with whom we want to match
           (pending) => pending._id === matchUserId
         );
-        // Si il y a bien un pendingMatch
+        // If there is a pending match we update the match
         if (pendingMatchIndex !== -1) {
-          // on met à jour le match 
+          // We get the matchId
           const pendingMatchId = user.pendingMatch[pendingMatchIndex].matchId;
-          // On modifie la valeur de accepted à  true
+          // We update the value of accepted to true
           await Match.findByIdAndUpdate(pendingMatchId, { accepted: true });
-          // On supprime le match du pending array
+          // We remove the match from the pending array
           user.pendingMatch.splice(pendingMatchIndex, 1);
-          // On sauvegarde les données de l'utilisateur
+          // We save the user data
           await user.save();
 
-          // On récupère le match mis à jour et on le retourne
+          // We get the updated match and return it
           const updatedMatch = await Match.findById(pendingMatchId);
 
           return updatedMatch;
         }
       }
 
-      // Si aucun match en attente, on retourne null
+      // If no pending match, we return null
       return null;
 
     } catch (error) {
@@ -199,11 +201,9 @@ const usersController = {
         return res.status(400).json({ message: 'Username or email already exist' });
       }
 
-      // abortEarly is an option that specifies whether or not to stop the
-      // validation as soon as the first error is encountered. By default,
-      // abortEarly is set to true, which means that the validation will stop as
-      // soon as it encounters the first error. If you set abortEarly to false,
-      // however, the validation will continue and return all errors encountered.
+      // AbortEarly is a option that specifies to stop when he encounter the first error.
+      // By default its set to true. If you set to false, the validation will continue and
+      // return all errors.
 
       const { error } = validationDataForm.validate(req.body, { abortEarly: false });
       console.log('error', error);

@@ -1,8 +1,8 @@
 require('dotenv').config();
 const cors = require('cors');
 const express = require('express');
-const router = require('./app/routers/index');
 const multer = require('multer');
+const router = require('./app/routers/index');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -17,5 +17,5 @@ app.use(express.urlencoded({ extended: true }));
 app.use(router);
 
 app.listen(PORT, () => {
-  console.log(`BetweenDevs API listening on port ${PORT}`);
+    console.log(`BetweenDevs API listening on port ${PORT}`);
 });

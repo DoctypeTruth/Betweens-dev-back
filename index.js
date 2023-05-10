@@ -3,7 +3,6 @@ const cors = require('cors');
 const express = require('express');
 const router = require('./app/routers/index');
 const multer = require('multer');
-const session = require('express-session');
 
 const app = express();
 const PORT = process.env.PORT || 5001;

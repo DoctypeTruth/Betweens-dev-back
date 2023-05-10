@@ -5,6 +5,7 @@ const Match = require('../models/match.js');
 const bcrypt = require('bcrypt');
 // import lookup pipeline to agregate specialization and technology collections to users
 const speTechnoLookup = require('../utils/speTechnoLookup')
+const validationDataForm = require('../utils/validationDataForm');
 
 const usersController = {
   /**
@@ -51,6 +52,8 @@ const usersController = {
     }
   },
 
+  // Todo : getOneUserByID
+
   createMatch: async (req, res) => {
     // const { userId } = req.user; // id de l'utilisateur connecté
     const userId = "78xzpouz1ua8c9n511v1ed"; // Temporairement manuel, sera récupéré dans la session
@@ -86,9 +89,9 @@ const usersController = {
         accepted: false
       });
       await match.save();
-      // On ajoute le match à l'utilisateur qui l'a demandéAdded function to create a match (total match between 2 users not available)"
+      // On ajoute le match à l'utilisateur qui l'a demandé
       await usersController.addMatchToUser(userId, match._id);
-      // On ajout le match en pending à l'utilisateur proposé
+      // On ajoute le match en pending à l'utilisateur proposé
       await usersController.addPendingMatchToUser(matchUserId, userId, match._id);
 
       return res.status(200).json({ message: "Match créé avec succès !" });
@@ -131,7 +134,7 @@ const usersController = {
         // Create pendingMatch Array if not exist
         user.pendingMatch = [];
       }
-      // On ajout l'id de l'utilisateur proposé ainsi que le matchId dans le tableau
+      // On ajoute l'id de l'utilisateur proposé ainsi que le matchId dans le tableau
       user.pendingMatch.push({ _id: userId, matchId });
       await user.save();
 
@@ -144,14 +147,13 @@ const usersController = {
   checkPendingMatch: async (userId, matchUserId) => {
 
     try {
-      // Vérifier s'il y a un match en attente pour l'utilisateur proposé
+      // On vérifie si il y a un match en attente pour l'utilisateur proposé
       const user = await User.findById(userId);
       if (user.pendingMatch.length > 0) {
-        // Trouver le match en attente pour l'utilisateur proposé
 
-        // On cherche le pendingMatch qui nous intérésse
+        // On cherche le pendingMatch qui nous intérésse et on récupère l'index
         const pendingMatchIndex = user.pendingMatch.findIndex(
-          // On compare l'id de l'utilisateur de le pending et l'id de l'utilisateur avec qui on veut matcher
+          // On compare l'id de l'utilisateur dans le pending et l'id de l'utilisateur avec qui on veut matcher
           (pending) => pending._id === matchUserId
         );
         // Si il y a bien un pendingMatch
@@ -160,7 +162,7 @@ const usersController = {
           const pendingMatchId = user.pendingMatch[pendingMatchIndex].matchId;
           // On modifie la valeur de accepted à  true
           await Match.findByIdAndUpdate(pendingMatchId, { accepted: true });
-          // On supprime le match du pending
+          // On supprime le match du pending array
           user.pendingMatch.splice(pendingMatchIndex, 1);
           // On sauvegarde les données de l'utilisateur
           await user.save();
@@ -172,7 +174,7 @@ const usersController = {
         }
       }
 
-      // Si aucun match en attente, retourner null
+      // Si aucun match en attente, on retourne null
       return null;
 
     } catch (error) {
@@ -180,8 +182,6 @@ const usersController = {
       throw new Error("Erreur serveur lors de la vérification du match en attente.");
     }
   },
-
-
 
   createUser: async (req, res) => {
     try {
@@ -197,6 +197,18 @@ const usersController = {
       let user = await User.findOne({ $or: [{ pseudo }, { email }] });
       if (user) {
         return res.status(400).json({ message: 'Username or email already exist' });
+      }
+
+      // abortEarly is an option that specifies whether or not to stop the
+      // validation as soon as the first error is encountered. By default,
+      // abortEarly is set to true, which means that the validation will stop as
+      // soon as it encounters the first error. If you set abortEarly to false,
+      // however, the validation will continue and return all errors encountered.
+
+      const { error } = validationDataForm.validate(req.body, { abortEarly: false });
+      console.log('error', error);
+      if (error) {
+        return res.status(400).json({ message: error.details });
       }
 
 

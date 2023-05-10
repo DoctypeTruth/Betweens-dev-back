@@ -10,6 +10,11 @@ const PORT = process.env.PORT || 5001;
 
 const bodyParser = multer();
 
+app.get('/', (_req, res) => {
+  res.send('Api betweenDevs Launched')
+})
+
+
 // We use .none() to specify when file is not expected, only classic inputs.
 app.use(bodyParser.none());
 

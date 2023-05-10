@@ -74,23 +74,11 @@ const usersController = {
   // Todo : getOneUserByID
 
   createMatch: async (req, res) => {
-    // const userId = req.user._id; // id de l'utilisateur connecté
-    // console.log("userConnectedId", userId)
-    const userId = "78xzpouz1ua8c9n511v1ed"; // Temporairement manuel, sera récupéré dans la session
+    const userId = req.user._id; // id de l'utilisateur connecté
+    // const userId = "78xzpouz1ua8c9n511v1ed"; // Temporairement manuel, sera récupéré dans la session
     const { matchUserId } = req.params; // id de l'utilisateur avec qui on veut matcher
 
     try {
-      // Vérifier si l'utilisateur connecté a déjà matché avec l'utilisateur proposé
-      // const existingMatch = await Match.findOne({
-      //   $or: [
-      //     { user1_id: userId, user2_id: matchUserId },
-      //     { user1_id: matchUserId, user2_id: userId }
-      //   ]
-      // });
-      // if (existingMatch) {
-      //   return res.status(400).json({ error: "Vous avez déjà matché avec cet utilisateur." });
-      // }
-
       // We check if there is a pending match for the proposed user
       const matchPending = await usersController.checkPendingMatch(userId, matchUserId);
       // If there is a pending match we validate it

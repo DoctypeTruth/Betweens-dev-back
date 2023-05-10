@@ -35,7 +35,7 @@ const matchController = {
       // We add the match to the user who requested it
       await matchController.addMatchToUser(userId, match._id);
       // We add the match in pending to the proposed user
-      await matchController.addPendingMatchToUser(matchUserId, userId, match._id);
+      await matchController.addPendingMatchToOtherUser(matchUserId, userId, match._id);
 
       return res.status(200).json({ message: "Match créé avec succès !" });
 
@@ -66,7 +66,7 @@ const matchController = {
     }
   },
 
-  addPendingMatchToUser: async (matchUserId, userId, matchId) => {
+  addPendingMatchToOtherUser: async (matchUserId, userId, matchId) => {
     try {
       const user = await User.findById(matchUserId);
       if (!user) {

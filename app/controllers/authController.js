@@ -8,18 +8,18 @@ const authController = {
   login: async (req, res) => {
     const { pseudo, password } = req.body;
     try {
-      // On récupère l'utilisateur dans la base de données
+      // We get the user from the database
       const user = await User.findOne({ pseudo });
 
-      // On vérifie si l'utilisateur existe et si le mot de passe est correct
+      // We check if the user exists and if the password is correct
       if (!user || !(await checkPassword(password, user.password))) {
         return res.status(401).json({ error: 'Username or password error, please try again' });
       }
 
-      // On génère un token JWT pour l'utilisateur
+      // We generate a JWT token for the user
       const token = generateJwt(user);
 
-      // On envoie le token JWT dans la réponse avec le status 200
+      // We send the JWT token in the response with status 200
       res.status(200).json({ token });
 
     } catch (error) {

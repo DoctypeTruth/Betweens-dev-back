@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 
-// Vérifie si le mot de passe est correct
+// Verifie if the password is correct
+
 const checkPassword = async (password, hash) => {
   return await bcrypt.compare(password, hash);
 }

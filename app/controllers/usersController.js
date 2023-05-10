@@ -7,6 +7,8 @@ const bcrypt = require('bcrypt');
 const speTechnoLookup = require('../utils/speTechnoLookup')
 const validationDataForm = require('../utils/validationDataForm');
 
+let lastUserId = null;
+
 const usersController = {
   /**
    * Get all users function
@@ -34,9 +36,25 @@ const usersController = {
   getOneUserBySpecilization: async (req, res) => {
     try {
       const specialization = req.params.slug;
+      const sessionUser = req.user._id;
+      const matches = await Match.find({ $or: [{ user1_id: sessionUser }, { user2_id: sessionUser }], accepted: true }).select('user1_id user2_id -_id');
+      const matchUserIds = matches.flatMap(match => [match.user1_id, match.user2_id]);
       const users = await User.aggregate([
         ...speTechnoLookup,
-        { $match: { "specialization.slug": specialization } },
+        {
+          $match: {
+            // On filtrer par spécialisation
+            "specialization.slug": specialization,
+            // On exclut l'utilisateur connecté
+            _id: { $ne: sessionUser },
+            // On exclut les utilisateurs avec qui l'utilisateur connecté a déjà un match
+            // validé & le dernier utilisateur affiché dans la recherche.
+            $nor: [
+              { _id: { $in: matchUserIds } },
+              { $and: [{ _id: { $ne: sessionUser } }, { _id: lastUserId }] }
+            ]
+          }
+        },
         { $sample: { size: 1 } } // get a single random document
       ]);
 
@@ -44,6 +62,7 @@ const usersController = {
         res.status(404).json({ error: 'No users found.' });
       } else {
         // Returns the first (and single) document in the array
+        lastUserId = users[0]._id;
         res.status(200).json(users[0]);
       }
     } catch (error) {
@@ -55,7 +74,8 @@ const usersController = {
   // Todo : getOneUserByID
 
   createMatch: async (req, res) => {
-    // const { userId } = req.user; // id de l'utilisateur connecté
+    // const userId = req.user._id; // id de l'utilisateur connecté
+    // console.log("userConnectedId", userId)
     const userId = "78xzpouz1ua8c9n511v1ed"; // Temporairement manuel, sera récupéré dans la session
     const { matchUserId } = req.params; // id de l'utilisateur avec qui on veut matcher
 

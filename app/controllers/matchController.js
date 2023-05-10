@@ -11,7 +11,7 @@ const matchController = {
     try {
       // We check if the user is trying to match with themselves
       if (userId === matchUserId) {
-        return res.status(400).json({ error: "Vous ne pouvez pas matcher avec vous-même." });
+        return res.status(400).json({ error: "You cannot match with yourself." });
       }
 
       // We check if there is a pending match for the proposed user
@@ -21,7 +21,7 @@ const matchController = {
         await Match.findByIdAndUpdate(matchPending._id, { accepted: true });
         // We add the match to the proposed user
         await matchController.addMatchToUser(userId, matchPending._id);
-        return res.status(200).json({ message: "C'est un match total, vous pouvez à présent commencer à discuter !" });
+        return res.status(200).json({ message: "It's a complete match, you can now start chatting!" });
       }
 
       // Else we create a new match
@@ -37,11 +37,11 @@ const matchController = {
       // We add the match in pending to the proposed user
       await matchController.addPendingMatchToOtherUser(matchUserId, userId, match._id);
 
-      return res.status(200).json({ message: "Match créé avec succès !" });
+      return res.status(200).json({ message: "Match created successfully!" });
 
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ error: "Erreur serveur lors de la création du match." });
+      return res.status(500).json({ error: "Server error while creating the match." });
     }
   },
 
@@ -49,7 +49,7 @@ const matchController = {
     try {
       const user = await User.findById(userId);
       if (!user) {
-        throw new Error("Utilisateur introuvable");
+        throw new Error("User not found");
       }
       if (!Array.isArray(user.match)) {
         // Create match array  if not exist
@@ -62,7 +62,7 @@ const matchController = {
 
     } catch (error) {
       console.error(error);
-      throw new Error("Erreur serveur lors de la mise à jour de l'utilisateur");
+      throw new Error("Server error while updating the user");
     }
   },
 
@@ -70,7 +70,7 @@ const matchController = {
     try {
       const user = await User.findById(matchUserId);
       if (!user) {
-        throw new Error("Utilisateur introuvable");
+        throw new Error("User not found");
       }
 
       if (!Array.isArray(user.pendingMatch)) {
@@ -83,7 +83,7 @@ const matchController = {
 
     } catch (error) {
       console.error(error);
-      throw new Error("Erreur serveur lors de la mise à jour de l'utilisateur");
+      throw new Error("Server error while updating the user");
     }
   },
 
@@ -124,7 +124,7 @@ const matchController = {
 
     } catch (error) {
       console.error(error);
-      throw new Error("Erreur serveur lors de la vérification du match en attente.");
+      throw new Error("Server error while checking for pending match.");
     }
   },
 }

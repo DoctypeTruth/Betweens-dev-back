@@ -7,20 +7,24 @@ const authController = require('../controllers/authController');
 const matchController = require('../controllers/matchController');
 
 
-
 /* Login api */
 router.post('/login', authController.login)
 
 /* Users API page. */
-router.get('/all-users', authMiddleware, usersController.getAllUsers);
-router.get('/all-users-by-spe/:slug', authMiddleware, usersController.getOneUserBySpecilization);
-router.post('/create-match/:matchUserId', authMiddleware, matchController.createMatch);
+router
+  .get('/all-users', authMiddleware, usersController.getAllUsers)
+  .get('/all-users-by-spe/:slug', authMiddleware, usersController.getOneUserBySpecilization)
+  .get('/one-user/:id', authMiddleware, usersController.getUserById);
 
-router.post('/create-user', usersController.createUser);
+router
+  .post('/create-match/:matchUserId', authMiddleware, matchController.createMatch)
+  .post('/create-user', usersController.createUser);
+
 router.patch('/update-user/:id', authMiddleware, usersController.updateUser);
+
 router.delete('/delete-user/:id', authMiddleware, usersController.deleteUser);
 
 /* Technologies API page. */
-router.get('/all-technologies', authMiddleware, technoController.getAllTechnologies);
+router.get('/all-techno', authMiddleware, technoController.getAllTechnologies);
 
 module.exports = router;

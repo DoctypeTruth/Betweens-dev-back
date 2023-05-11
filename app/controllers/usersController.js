@@ -132,7 +132,7 @@ const usersController = {
         technology: technologyInfos.map(techno => { return { _id: techno._id } }),
         specialization: {
           _id: specializationInfos._id,
-        }
+        },
       }
 
       // Create a new user

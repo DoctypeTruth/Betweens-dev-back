@@ -25,9 +25,6 @@ const validationDataForm = Joi.object({
   level: Joi.string(),
   goals: Joi.string().required(),
   technology: Joi.array(),
-  // technology: Joi.object({
-  //     name: Joi.string(),
-  // }),
   specialization: Joi.string(),
   // specialization: Joi.object({
 

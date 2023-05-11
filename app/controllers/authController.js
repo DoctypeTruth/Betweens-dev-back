@@ -6,10 +6,10 @@ const checkPassword = require('../utils/checkPassword');
 const authController = {
 
   login: async (req, res) => {
-    const { pseudo, password } = req.body;
+    const { email, password } = req.body;
     try {
       // We get the user from the database
-      const user = await User.findOne({ pseudo });
+      const user = await User.findOne({ email });
 
       // We check if the user exists and if the password is correct
       if (!user || !(await checkPassword(password, user.password))) {

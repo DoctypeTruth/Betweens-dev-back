@@ -25,6 +25,6 @@ router.patch('/update-user/:id', authMiddleware, usersController.updateUser);
 router.delete('/delete-user/:id', authMiddleware, usersController.deleteUser);
 
 /* Technologies API page. */
-router.get('/all-techno', authMiddleware, technoController.getAllTechnologies);
+router.get('/all-techno', technoController.getAllTechnologies);
 
 module.exports = router;

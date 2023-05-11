@@ -149,11 +149,15 @@ const usersController = {
 
   updateUser: async (req, res) => {
 
-    const { pseudo, email, city, picture, password, description, status, level, goals, technology, specialization } = req.body;
-    // Todo : Add input value test
-
     try {
       const userId = req.params.id;
+
+      const { pseudo, email, city, picture, password, description, status, level, goals, technology, specialization } = req.body;
+
+      const { error } = validationDataForm.validate(req.body, { abortEarly: false });
+      if (error) {
+        return res.status(400).json({ message: error.details });
+      }
 
       const updateData = {
         pseudo,
@@ -164,14 +168,16 @@ const usersController = {
         description,
         status,
         level,
-        goals,
-        // technology: {
-        //   _id: technologyInfos._id,
-        // },
-        // specialization: {
-        //   _id: specializationInfos._id,
-        // }
+        goals: {
+          _id: goalsInfos._id,
+        },
+        technology: technologyInfos.map(techno => { return { _id: techno._id } }),
+        specialization: {
+          _id: specializationInfos._id,
+        }
       }
+
+
       const updatedUser = await User.findOneAndUpdate({ _id: userId }, { $set: updateData }, { new: true });
       if ((updatedUser) && (!res.headersSent)) {
         console.log('User updated successfully:', updatedUser);

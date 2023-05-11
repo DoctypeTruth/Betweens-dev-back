@@ -71,7 +71,7 @@ const usersController = {
     }
   },
 
-  getOneUserById: async (req, res) => { 
+  getUserById: async (req, res) => { 
     try {
       const user = await User.aggregate(speTechnoLookup).match({ _id: req.params.id });
       if (!user) {

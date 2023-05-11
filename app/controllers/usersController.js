@@ -71,10 +71,9 @@ const usersController = {
     }
   },
 
-  // Todo : getOneUserByID
   getOneUserById: async (req, res) => { 
     try {
-      const user = await User.findById(req.params.id);
+      const user = await User.aggregate(speTechnoLookup).match({ _id: req.params.id });
       if (!user) {
         return res.status(404).json({ error: 'User not found.' });
       }

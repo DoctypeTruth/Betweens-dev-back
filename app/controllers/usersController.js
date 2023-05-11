@@ -87,31 +87,31 @@ const usersController = {
     try {
       const { pseudo, email, city, picture, password, description, status, level, goals, technology, specialization } = req.body;
 
-
-      // if (req.params.id) {
-      //   console.log("udpdate mode")
-      //   return;
-      // }
-
       // Check if the username or email already exist
       let user = await User.findOne({ $or: [{ pseudo }, { email }] });
       if (user) {
         return res.status(400).json({ message: 'Username or email already exist' });
       }
 
-      // AbortEarly is a option that specifies to stop when he encounter the first error.
-      // By default its set to true. If you set to false, the validation will continue and
+      // AbortEarly is an option that specifies to stop when he encounter the first error.
+      // By default its set to true. If you set it to false, the validation will continue and
       // return all errors.
 
       const { error } = validationDataForm.validate(req.body, { abortEarly: false });
-      console.log('error', error);
       if (error) {
         return res.status(400).json({ message: error.details });
       }
 
+      // We get labels sent by the front
+      const labels = technology.map(t => t.label);
 
-      const technologyInfos = await Technology.findOne({ name: technology });
+      // We use the $in, the comparaison operator to find technology associated to the
+      // name (labels) 
+      const technologyInfos = await Technology.find({ name: { $in: labels } });
+
       const specializationInfos = await Specialization.findOne({ name: specialization });
+
+      const goalsInfos = await Specialization.findOne({ name: goals });
 
       // Hash the password
       const saltRounds = 10;
@@ -126,10 +126,10 @@ const usersController = {
         description,
         status,
         level,
-        goals,
-        technology: {
-          _id: technologyInfos._id,
+        goals: {
+          _id: goalsInfos._id,
         },
+        technology: technologyInfos.map(techno => { return { _id: techno._id } }),
         specialization: {
           _id: specializationInfos._id,
         }
@@ -154,6 +154,7 @@ const usersController = {
 
     try {
       const userId = req.params.id;
+
       const updateData = {
         pseudo,
         email,

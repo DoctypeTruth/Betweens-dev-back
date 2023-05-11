@@ -25,14 +25,21 @@ const userSchema = new mongoose.Schema({
   description: String,
   status: String,
   level: String,
-  goals: [String],
-  technology: {
+  goals: {
+    _id: {
+      type: mongoose.Schema.Types.String,
+      ref: 'Specialization'
+    },
+    name: String,
+    slug: String
+  },
+  technology: [{
     _id: {
       type: mongoose.Schema.Types.String,
       ref: 'Technology'
     },
     name: String
-  },
+  }],
   specialization: {
     _id: {
       type: mongoose.Schema.Types.String,

@@ -13,6 +13,19 @@ const speTechnoLookup = [
     $unwind: '$specialization'
   },
   {
+    // $lookup joint collection.
+    $lookup: {
+      from: 'specialization',
+      localField: 'goals._id',
+      foreignField: '_id',
+      as: 'goals'
+    }
+  },
+  {
+    // By default it will retrieve in array, unwind remove it.
+    $unwind: '$goals'
+  },
+  {
     $lookup: {
       from: 'technology',
       localField: 'technology._id',

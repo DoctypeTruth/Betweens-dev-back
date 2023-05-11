@@ -10,22 +10,25 @@ const validationDataForm = Joi.object({
   ),
   city: Joi.string(),
   picture: Joi.string(),
-  password: Joi.string().min(8).max(30).required()
-    .pattern(
-      // This regex ensure that the password contains at least one lowercase and uppercase
-      // letter, one digit, one special character. It also make sure the  minimum length
-      // of 8 characters
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/,
-    ),
+  password: Joi.string().min(4).max(30).required(),
+  // .pattern(
+  //   // This regex ensure that the password contains at least one lowercase and uppercase
+  //   // letter, one digit, one special character. It also make sure the  minimum length
+  //   // of 8 characters
+  //   /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/,
+  // ),
+  confirmPassword: Joi.string().valid(Joi.ref('password')).required().messages({
+    'any.only': 'Passwords do not match',
+  }),
   description: Joi.string(),
   status: Joi.string(),
   level: Joi.string(),
-  goals: Joi.string(),
-  technology: Joi.string(),
+  goals: Joi.string().required(),
+  technology: Joi.array(),
   // technology: Joi.object({
   //     name: Joi.string(),
   // }),
-  specialization: Joi.string().required(),
+  specialization: Joi.string(),
   // specialization: Joi.object({
 
   //     name: Joi.string().required(),

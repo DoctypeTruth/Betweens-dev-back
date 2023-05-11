@@ -70,7 +70,18 @@ const usersController = {
     }
   },
 
-  // Todo : getOneUserByID
+  getUserById: async (req, res) => {
+    try {
+      const user = await User.aggregate(speTechnoLookup).match({ _id: req.params.id });
+      if (!user) {
+        return res.status(404).json({ error: 'User not found.' });
+      }
+      res.status(200).json(user);
+    } catch (error) {
+      console.error('Error getting user:', error);
+      res.status(500).json({ error: 'Failed to get user.' });
+    }
+  },
 
   createUser: async (req, res) => {
     try {

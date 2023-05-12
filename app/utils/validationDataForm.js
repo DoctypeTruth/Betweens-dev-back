@@ -10,15 +10,24 @@ const validationDataForm = Joi.object({
   ),
   city: Joi.string(),
   picture: Joi.string(),
-  password: Joi.string().min(4).max(30).required(),
+  // When isCreatingUser is true, password is require else optional
+  password: Joi.when('$isCreatingUser', {
+    is: true,
+    then: Joi.string().min(4).max(30).required(),
+    otherwise: Joi.string().allow(null).optional(),
+  }),
   // .pattern(
   //   // This regex ensure that the password contains at least one lowercase and uppercase
   //   // letter, one digit, one special character. It also make sure the  minimum length
   //   // of 8 characters
   //   /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/,
   // ),
-  confirmPassword: Joi.string().valid(Joi.ref('password')).required().messages({
-    'any.only': 'Passwords do not match',
+  confirmPassword: Joi.when('$isCreatingUser', {
+    is: true,
+    then: Joi.string().valid(Joi.ref('password')).required().messages({
+      'any.only': 'Passwords do not match',
+    }),
+    otherwise: Joi.string().allow(null).optional(),
   }),
   description: Joi.string(),
   status: Joi.string(),
@@ -26,11 +35,7 @@ const validationDataForm = Joi.object({
   goals: Joi.string().required(),
   technology: Joi.array(),
   specialization: Joi.string(),
-  // specialization: Joi.object({
-
-  //     name: Joi.string().required(),
-  //     slug: Joi.string(),
-  // }),
-});
+}
+);
 
 module.exports = validationDataForm;

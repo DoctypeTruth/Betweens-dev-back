@@ -17,9 +17,3 @@
     "multer": "^1.4.5-lts.1",
     "nodemon": "^2.0.22"
 ```
-
-"goals": {
-      "_id": "615080a748f20ddefbeec28c",
-      "name": "Front-End",
-      "slug": "frontend"
-    },

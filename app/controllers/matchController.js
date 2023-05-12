@@ -21,7 +21,7 @@ const matchController = {
         await Match.findByIdAndUpdate(matchPending._id, { accepted: true });
         // We add the match to the proposed user
         await matchController.addMatchToUser(userId, matchPending._id);
-        return res.status(200).json({ message: "It's a complete match, you can now start chatting!" });
+        return res.status(201).json({ message: "It's a complete match, you can now start chatting!" });
       }
 
       // Else we create a new match

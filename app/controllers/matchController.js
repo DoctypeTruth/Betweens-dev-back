@@ -3,6 +3,35 @@ const Match = require('../models/match.js');
 
 const matchController = {
 
+  getAllMatches: async (req, res) => {
+    const userId = req.user._id; // id connnected user
+    try {
+      // We get all the matches of the user
+      const userMatches = await User.aggregate(speTechnoLookup).match({ _id: userId });
+
+      if (!userMatches) {
+        return res.status(404).json({ error: 'No match found' });
+      }
+
+      const matches = userMatches[0].match;
+
+      const filteredMatch = await matches.filter(match => (match.user1_id !== userId || match.user2_id !== userId) && match.accepted)
+
+      const userMatchInfos = []
+      for (const match of filteredMatch) {
+        const user = await User.findOne({ _id: match.user1_id !== userId ? match.user1_id : match.user2_id });
+        userMatchInfos.push({ _id: user._id, pseudo: user.pseudo, picture: user.picture })
+      }
+
+      res.status(200).json(userMatchInfos);
+
+    }
+    catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Server error while getting the matches' });
+    }
+  },
+
   createMatch: async (req, res) => {
     const userId = req.user._id; // id de l'utilisateur connecté
     // const userId = "78xzpouz1ua8c9n511v1ed"; // Temporairement manuel, sera récupéré dans la session

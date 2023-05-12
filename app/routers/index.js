@@ -14,7 +14,8 @@ router.post('/login', authController.login)
 router
   .get('/all-users', authMiddleware, usersController.getAllUsers)
   .get('/all-users-by-spe/:slug', authMiddleware, usersController.getOneUserBySpecilization)
-  .get('/one-user/:id', authMiddleware, usersController.getUserById);
+  .get('/one-user/:id', authMiddleware, usersController.getUserById)
+  .get('/all-matches', authMiddleware, matchController.getAllMatches);
 
 router
   .post('/create-match/:matchUserId', authMiddleware, matchController.createMatch)

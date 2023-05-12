@@ -34,7 +34,7 @@ const usersController = {
   // Here the function allow us to retrieve one user by their specialization
   getOneUserBySpecilization: async (req, res) => {
     try {
-      const specialization = req.params.slug;
+      const desiredSpecialization = req.params.slug;
       const sessionUser = req.user._id;
       const matches = await Match.find({ $or: [{ user1_id: sessionUser }, { user2_id: sessionUser }], accepted: true }).select('user1_id user2_id -_id');
       const matchUserIds = matches.flatMap(match => [match.user1_id, match.user2_id]);
@@ -43,7 +43,7 @@ const usersController = {
         {
           $match: {
             // On filtrer par spécialisation
-            "specialization.slug": specialization,
+            "goals.slug": desiredSpecialization,
             // On exclut l'utilisateur connecté
             _id: { $ne: sessionUser },
             // On exclut les utilisateurs avec qui l'utilisateur connecté a déjà un match
@@ -97,7 +97,7 @@ const usersController = {
       // By default its set to true. If you set it to false, the validation will continue and
       // return all errors.
 
-      const { error } = validationDataForm.validate(req.body, { abortEarly: false });
+      const { error } = validationDataForm.validate(req.body, { abortEarly: false, isCreatingUser: req.method === 'POST' ? true : false });
       if (error) {
         return res.status(400).json({ message: error.details });
       }
@@ -154,17 +154,24 @@ const usersController = {
 
       const { pseudo, email, city, picture, password, description, status, level, goals, technology, specialization } = req.body;
 
-      const { error } = validationDataForm.validate(req.body, { abortEarly: false });
+      const { error } = validationDataForm.validate(req.body, { abortEarly: false, isCreatingUser: req.method === 'POST' ? true : false });
+
       if (error) {
         return res.status(400).json({ message: error.details });
       }
+
+      const labels = technology.map(t => t.label);
+      const technologyInfos = await Technology.find({ name: { $in: labels } });
+
+      const specializationInfos = await Specialization.findOne({ name: specialization });
+
+      const goalsInfos = await Specialization.findOne({ name: goals });
 
       const updateData = {
         pseudo,
         email,
         city,
         picture,
-        // password: hashedPassword,
         description,
         status,
         level,
@@ -177,19 +184,24 @@ const usersController = {
         }
       }
 
+      //Check if password property is defined
+      if (password) {
+        // Hash the password
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+        updateData.password = hashedPassword;
+      }
 
-      const updatedUser = await User.findOneAndUpdate({ _id: userId }, { $set: updateData }, { new: true });
-      if ((updatedUser) && (!res.headersSent)) {
+      const updatedUser = await User.findOneAndUpdate({ _id: userId }, { $set: updateData }, { new: true, runValidators: true });
+      if (updatedUser) {
         console.log('User updated successfully:', updatedUser);
         res.status(200).json(updatedUser);
       } else {
         res.status(404).json({ error: 'User not found.' });
       }
     } catch (error) {
-      if (!res.headersSent) {
-        console.error('Error updating user:', error);
-        res.status(500).json({ error: 'Failed to update user.' });
-      }
+      console.error('Error updating user:', error);
+      res.status(500).json({ error: 'Failed to update user.' });
     }
   },
 

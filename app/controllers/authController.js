@@ -1,4 +1,5 @@
 const User = require('../models/user.js');
+const speTechnoLookup = require('../utils/speTechnoLookup')
 const generateJwt = require('../utils/generateJWT');
 const checkPassword = require('../utils/checkPassword');
 
@@ -9,18 +10,20 @@ const authController = {
     const { email, password } = req.body;
     try {
       // We get the user from the database
-      const user = await User.findOne({ email });
+
+      const user = await User.aggregate(speTechnoLookup).match({ email });
 
       // We check if the user exists and if the password is correct
-      if (!user || !(await checkPassword(password, user.password))) {
+      if (!user || !(await checkPassword(password, user[0].password))) {
         return res.status(401).json({ error: 'Username or password error, please try again' });
       }
 
       // We generate a JWT token for the user
-      const token = generateJwt(user);
+      const token = generateJwt(user[0]);
 
-      // We send the JWT token in the response with status 200
-      res.status(200).json({ token, userId: user._id });
+
+      // We send the JWT token in the response with status 200 and other informations
+      res.status(200).json({ token, userId: user[0]._id, goalsSlug: user[0].goals.slug });
 
     } catch (error) {
       console.error(error);

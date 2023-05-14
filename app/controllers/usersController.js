@@ -43,7 +43,7 @@ const usersController = {
         {
           $match: {
             // On filtrer par spécialisation
-            "goals.slug": desiredSpecialization,
+            "specialization.slug": desiredSpecialization,
             // On exclut l'utilisateur connecté
             _id: { $ne: sessionUser },
             // On exclut les utilisateurs avec qui l'utilisateur connecté a déjà un match
@@ -159,7 +159,6 @@ const usersController = {
       if (error) {
         return res.status(400).json({ message: error.details });
       }
-
       const labels = technology.map(t => t.label);
       const technologyInfos = await Technology.find({ name: { $in: labels } });
 

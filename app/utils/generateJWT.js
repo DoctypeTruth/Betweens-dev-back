@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const generateJwt = (user) => {
   // Create a JWT with the user ID and pseudo
   const token = jwt.sign(
-    { _id: user._id, pseudo: user.pseudo },
+    { _id: user._id, pseudo: user.pseudo, goals: user.goals.slug },
     process.env.JWT_SECRET_KEY,
     { expiresIn: '1d' } // Token expires after 1 day
   );

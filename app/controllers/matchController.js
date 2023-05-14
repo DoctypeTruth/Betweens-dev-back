@@ -33,8 +33,9 @@ const matchController = {
   },
 
   createMatch: async (req, res) => {
-    const userId = req.user._id; // id de l'utilisateur connecté
-    // const userId = "78xzpouz1ua8c9n511v1ed"; // Temporairement manuel, sera récupéré dans la session
+    // connected user id
+    const userId = req.user._id;
+    // co
     const { matchUserId } = req.params; // id de l'utilisateur avec qui on veut matcher
 
     try {

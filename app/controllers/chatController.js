@@ -8,12 +8,12 @@ const chatController = {
 
     io.on('connection', (socket) => {
       console.log('Nouvelle connexion socket :', socket.id);
-
-      // Écouter l'événement "message" du client
+      console.log("socket", socket);
+      // Listen message from client
       socket.on('message', (data) => {
         console.log('Nouveau message reçu :', data);
 
-        // Émettre le message à tous les clients connectés
+        // Send message for all connected clients
         io.emit('message', data);
       });
 

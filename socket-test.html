@@ -5,18 +5,26 @@
   <title>Socket.IO Test</title>
   <script src="/socket.io/socket.io.js"></script>
   <script>
-    const socket = io();
+    const socket = io('http://localhost:5000');
 
     socket.on('message', (data) => {
       const messageContainer = document.getElementById('message-container');
       const messageElement = document.createElement('div');
-      messageElement.innerText = data;
+      messageElement.innerText = data.message;
       messageContainer.appendChild(messageElement);
     });
 
     function sendMessage() {
       const message = document.getElementById('message-input').value;
-      socket.emit('message', message);
+      const data = {
+        message: message,
+        date: new Date().toISOString(),
+        senderId: "123456123frefre",
+        receiverId: "48978653frefre",
+        matchId: "789465ferfrefre"
+      };
+
+      socket.emit('message', data);
       document.getElementById('message-input').value = "";
     }
   </script>

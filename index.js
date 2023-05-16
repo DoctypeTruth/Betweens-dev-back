@@ -27,7 +27,11 @@ const server = http.createServer(app);
 // Temporary line to test chat
 app.use('/socket.io', express.static(__dirname + '/node_modules/socket.io/client-dist'));
 
-const io = socketIo(server);
+const io = socketIo(server, {
+  cors: {
+    origin: '*',
+  },
+});
 
 io.on('connection', (socket) => {
   console.log('Nouvelle connexion socket :', socket.id);

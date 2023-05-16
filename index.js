@@ -6,7 +6,7 @@ const multer = require('multer');
 
 const http = require('http');
 const socketIo = require('socket.io');
-
+const Message = require('./app/models/message')
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -36,7 +36,7 @@ const io = socketIo(server, {
 io.on('connection', (socket) => {
   console.log('Nouvelle connexion socket :', socket.id);
 
-  // Listen message from client
+  // Écoutez les messages des clients
   socket.on('message', (data) => {
     const message = data.message;
     const date = data.date;
@@ -44,14 +44,25 @@ io.on('connection', (socket) => {
     const receiverId = data.receiverId;
     const matchId = data.matchId;
 
-    // Utilisez les valeurs récupérées comme vous le souhaitez
-    console.log('Nouveau message reçu :', message);
-    console.log('Date :', date);
-    console.log('Sender ID :', senderId);
-    console.log('Receiver ID :', receiverId);
-    console.log('Match ID :', matchId);
-    // Send message for all connected clients
-    io.emit('message', data);
+    // Créez une instance du modèle "Message" avec les données reçues
+    const newMessage = new Message({
+      message,
+      date,
+      senderId,
+      receiverId,
+      matchId
+    });
+
+    // Enregistrez le nouveau message dans la collection "messages"
+    newMessage.save()
+      .then((savedMessage) => {
+        console.log('Nouveau message enregistré :', savedMessage);
+        // Émettez le message à tous les clients connectés
+        io.emit('message', savedMessage);
+      })
+      .catch((error) => {
+        console.error('Erreur lors de l\'enregistrement du message :', error);
+      });
   });
 
   socket.on('disconnect', () => {

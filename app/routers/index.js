@@ -36,6 +36,8 @@ router.get('/chat', (req, res) => {
   res.send('Chat started');
 });
 
+router.get('/messages/:matchId', chatController.getMessagesByMatchId)
+
 
 
 module.exports = router;

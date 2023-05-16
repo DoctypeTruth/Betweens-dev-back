@@ -2,8 +2,8 @@
 const socketIo = require('socket.io');
 
 const chatController = {
+
   handleChatConnexion: (server) => {
-    console.log('server', server);
     const io = socketIo(server);
 
     io.on('connection', (socket) => {
@@ -20,6 +20,9 @@ const chatController = {
       socket.on('disconnect', () => {
         console.log('Déconnexion socket :', socket.id);
       });
+
+
+      socket.emit('connexion-établie', socket.id);
     });
   }
 }

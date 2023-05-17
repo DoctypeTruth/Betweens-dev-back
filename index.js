@@ -37,33 +37,45 @@ io.on('connection', (socket) => {
   console.log('Nouvelle connexion socket :', socket.id);
 
   // Écoutez les messages des clients
-  socket.on('message', (data) => {
+  socket.on('message', async (data) => {
     const message = data.message;
     const date = data.date;
     const senderId = data.senderId;
     const receiverId = data.receiverId;
     const matchId = data.matchId;
+    const socketId = socket.id
 
-    // Créez une instance du modèle "Message" avec les données reçues
-    const newMessage = new Message({
-      message,
-      date,
-      senderId,
-      receiverId,
-      matchId
-    });
-
-    // Enregistrez le nouveau message dans la collection "messages"
-    newMessage.save()
-      .then((savedMessage) => {
-        console.log('Nouveau message enregistré :', savedMessage);
-        // Émettez le message à tous les clients connectés
-        io.emit('message', savedMessage);
-      })
-      .catch((error) => {
-        console.error('Erreur lors de l\'enregistrement du message :', error);
+    try {
+      // Créez une instance du modèle "Message" avec les données reçues
+      const newMessage = new Message({
+        message,
+        date,
+        senderId,
+        receiverId,
+        matchId,
+        socketId
       });
+
+      // Enregistrez le nouveau message dans la collection "messages"
+      const savedMessage = await newMessage.save();
+      console.log('Nouveau message enregistré :', newMessage);
+
+      // Émettez le message à tous les clients connectés à la discussion
+
+      socket.join(`match_${matchId}`)
+      io.to(`match_${matchId}`).emit('message', savedMessage);
+
+      // io.emit('message', savedMessage);
+      // io.to(`match_${matchId}`).emit('message', savedMessage)
+    } catch (error) {
+      console.error('Erreur lors de l\'enregistrement du message :', error);
+    }
   });
+
+  socket.on('joinRoom', (room) => {
+    socket.join(room);
+  });
+
 
   socket.on('disconnect', () => {
     console.log('Déconnexion socket :', socket.id);

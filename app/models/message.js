@@ -24,6 +24,10 @@ const messageSchema = new mongoose.Schema({
   matchId: {
     type: String,
     required: true
+  },
+  socketId: {
+    type: String,
+    required: true
   }
 });
 

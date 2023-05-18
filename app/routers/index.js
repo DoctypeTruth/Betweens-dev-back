@@ -5,7 +5,7 @@ const technoController = require('../controllers/technologiesController');
 const authMiddleware = require('../middlewares/authMiddleware');
 const authController = require('../controllers/authController');
 const matchController = require('../controllers/matchController');
-
+const messageController = require('../controllers/messageController');
 
 /* Login api */
 router.post('/login', authController.login)
@@ -15,7 +15,8 @@ router
   .get('/all-users', authMiddleware, usersController.getAllUsers)
   .get('/all-users-by-spe/:slug', authMiddleware, usersController.getOneUserBySpecilization)
   .get('/one-user/:id', authMiddleware, usersController.getUserById)
-  .get('/all-matches', authMiddleware, matchController.getAllMatches);
+  .get('/all-matches', authMiddleware, matchController.getAllMatches)
+  .get('/get-last-message/:matchId', authMiddleware, messageController.getLastMessage);
 
 router
   .post('/create-match/:matchUserId', authMiddleware, matchController.createMatch)

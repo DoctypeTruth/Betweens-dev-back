@@ -15,7 +15,7 @@ const messageController = {
                 return res.status(404).json({ error: 'Message not found' });
               }
 
-            res.status(200).json(messages[0]);
+            res.status(200).json(messages);
         } catch (error) {
             console.error(error);
             res.status(500).json({ error: 'Failed to get messages' });

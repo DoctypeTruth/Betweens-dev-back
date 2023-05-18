@@ -16,7 +16,7 @@ router
   .get('/all-users-by-spe/:slug', authMiddleware, usersController.getOneUserBySpecilization)
   .get('/one-user/:id', authMiddleware, usersController.getUserById)
   .get('/all-matches', authMiddleware, matchController.getAllMatches)
-  .get('/get-last-message/:matchId', authMiddleware, messageController.getLastMessage);
+  .get('/get-last-message/:matchId', messageController.getLastMessage);
 
 router
   .post('/create-match/:matchUserId', authMiddleware, matchController.createMatch)

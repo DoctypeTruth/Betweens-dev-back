@@ -33,54 +33,65 @@ const io = socketIo(server, {
   },
 });
 
+
 io.on('connection', (socket) => {
   console.log('Nouvelle connexion socket :', socket.id);
 
-  // Écoutez les messages des clients
-  socket.on('message', async (data) => {
+  // var to stock current room value of the connected user
+  let currentRoom = null;
+
+  // listen message of users
+  socket.on('sendMessageToRoom', async ({ room, data }) => {
+    console.log(data);
     const message = data.message;
     const date = data.date;
     const senderId = data.senderId;
     const receiverId = data.receiverId;
     const matchId = data.matchId;
-    const socketId = socket.id
 
     try {
-      // Créez une instance du modèle "Message" avec les données reçues
+      // creating new instance of received data
       const newMessage = new Message({
         message,
         date,
         senderId,
         receiverId,
         matchId,
-        socketId
       });
 
-      // Enregistrez le nouveau message dans la collection "messages"
+      // saved message in the collection
       const savedMessage = await newMessage.save();
       console.log('Nouveau message enregistré :', newMessage);
 
-      // Émettez le message à tous les clients connectés à la discussion
-
-      socket.join(`match_${matchId}`)
-      io.to(`match_${matchId}`).emit('message', savedMessage);
-
-      // io.emit('message', savedMessage);
-      // io.to(`match_${matchId}`).emit('message', savedMessage)
+      // message sent for all connected clients to the room
+      io.to(room).emit('message', savedMessage);
     } catch (error) {
       console.error('Erreur lors de l\'enregistrement du message :', error);
     }
   });
 
   socket.on('joinRoom', (room) => {
+    if (currentRoom) {
+      // Leave current room
+      socket.leave(currentRoom);
+    }
+    // Join new room
     socket.join(room);
+    // updated current room of connected user
+    currentRoom = room;
   });
-
 
   socket.on('disconnect', () => {
+
     console.log('Déconnexion socket :', socket.id);
+    if (currentRoom) {
+      // Disconnect user from the room
+      socket.leave(currentRoom);
+    }
+    currentRoom = null;
   });
 });
+
 
 // We use .none() to specify when file is not expected, only classic inputs.
 app.use(bodyParser.none());

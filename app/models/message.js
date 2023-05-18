@@ -25,10 +25,10 @@ const messageSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  socketId: {
-    type: String,
-    required: true
-  }
+  // socketId: {
+  //   type: String,
+  //   required: true
+  // }
 });
 
 const Message = mongoose.model('Message', messageSchema, 'message');

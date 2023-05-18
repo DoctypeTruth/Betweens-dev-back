@@ -13,6 +13,13 @@ const PORT = process.env.PORT || 5001;
 
 const bodyParser = multer();
 
+// TEMP 
+
+app.get('/video', (_req, res) => {
+  res.sendFile(__dirname + '/video/test.mp4');
+});
+
+
 // Home route
 app.get('/', (_req, res) => {
   res.send('Api betweenDevs Launched')
@@ -21,6 +28,10 @@ app.get('/', (_req, res) => {
 app.get('/socket-test', (_req, res) => {
   res.sendFile(__dirname + '/socket-test.html');
 });
+app.get('/video-test', (_req, res) => {
+  res.sendFile(__dirname + '/video-test.html');
+});
+
 
 const server = http.createServer(app);
 
@@ -80,6 +91,29 @@ io.on('connection', (socket) => {
     socket.join(room);
     // updated current room of connected user
     currentRoom = room;
+  });
+
+  // Gestion de l'appel vidéo
+  socket.on('offer', ({ roomTemp, offer }) => {
+    // Envoyer l'offre à l'autre utilisateur de la salle
+    console.log('offer')
+    // socket.to(roomTemp).emit('offer', offer);
+    socket.emit('offer', offer);
+  });
+
+  socket.on('answer', ({ roomTemp, answer }) => {
+    console.log('answer')
+    // Envoyer la réponse à l'autre utilisateur de la salle
+    // socket.to(roomTemp).emit('answer', answer);
+    socket.emit('anwser', answer);
+  });
+
+  // Écouter le candidat ICE émis par le client
+  socket.on('iceCandidate', ({ roomTemp, iceCandidate }) => {
+    console.log("iceCandidate")
+    // Envoyer le candidat ICE aux autres clients de la salle
+    // socket.to(roomTemp).emit('iceCandidate', iceCandidate);
+    socket.emit('iceCandidate', iceCandidate)
   });
 
   socket.on('disconnect', () => {

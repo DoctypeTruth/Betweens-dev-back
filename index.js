@@ -101,7 +101,6 @@ io.on('connection', (socket) => {
   // Fonction asynchrone pour gérer la demande de connexion
   async function handleConnectionRequest(roomTemp) {
     console.log('Received connection request from:', socket.id);
-    console.log("ROOM : ", roomTemp);
     // Envoyer une offre à l'autre utilisateur de la salle
     const offer = await peerConnection.createOffer();
     await peerConnection.setLocalDescription(offer);

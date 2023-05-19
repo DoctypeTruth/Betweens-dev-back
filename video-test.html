@@ -6,8 +6,8 @@
 </head>
 
 <body>
-  <video id="local-video" autoplay></video>
-  <video id="remote-video" autoplay></video>
+  <!-- <video id="local-video" autoplay></video> -->
+  <video id="remote-video" autoplay playsinline></video>
   <button onclick="sendConnectionRequest()">Send</button>
 
   <script src="/socket.io/socket.io.js"></script>
@@ -18,11 +18,13 @@
     // Création d'une nouvelle instance de connexion RTCPeerConnection
     const peerConnection = new RTCPeerConnection();
 
-    // Création d'un élément vidéo pour afficher le flux vidéo local
-    const localVideoElement = document.getElementById('local-video');
+    // // Création d'un élément vidéo pour afficher le flux vidéo local
+    // const localVideoElement = document.getElementById('local-video');
 
     // Création d'un élément vidéo pour afficher le flux vidéo distant
     const remoteVideoElement = document.getElementById('remote-video');
+
+    let isConnected = false;
 
     // Demande la permission d'accéder à la webcam
     navigator.mediaDevices.getUserMedia({ video: true })
@@ -33,7 +35,7 @@
         });
 
         // Affichage du flux vidéo de la webcam dans l'élément vidéo local
-        localVideoElement.srcObject = stream;
+        // localVideoElement.srcObject = stream;
 
         // Événement de réception d'un nouveau candidat ICE
         peerConnection.onicecandidate = (event) => {
@@ -45,6 +47,8 @@
 
         // Événement de réception d'une offre (offer) du serveur
         socket.on('offer', (offer) => {
+
+          console.log('Demande reçues')
           // Définir la description distante (remote description) de la connexion RTCPeerConnection
           peerConnection.setRemoteDescription(offer)
             .then(() => {
@@ -105,6 +109,12 @@
       socket.emit('connectionRequest', { roomTemp });
     }
 
+
+    // Événement de clic sur le bouton "Send"
+    const sendButton = document.querySelector('button');
+    sendButton.addEventListener('click', sendConnectionRequest);
+
+
     // Événement de réception d'une demande de connexion de l'autre utilisateur
     socket.on('connectionRequest', () => {
       // Créer une nouvelle offre (offer)
@@ -147,6 +157,10 @@
     socket.on('answer', (answer) => {
       // Définir la description distante (remote description) de la connexion RTCPeerConnection
       peerConnection.setRemoteDescription(answer)
+        .then(() => {
+          // Mettre à jour l'état de la connexion
+          isConnected = true;
+        })
         .catch((error) => {
           console.error('Erreur lors de la définition de la description distante :', error);
         });

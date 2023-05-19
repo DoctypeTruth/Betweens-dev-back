@@ -7,90 +7,106 @@
 
 <body>
   <video id="local-video" autoplay></video>
+  <video id="remote-video" autoplay></video>
+  <button onclick="sendConnectionRequest()">Send</button>
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io('http://localhost:5000');
     const roomTemp = 'toto'; // Remplacez par le nom de votre salle
 
-    // Spécifiez l'URL de la vidéo que vous souhaitez utiliser
-    const videoUrl = '/video';
-
     // Création d'une nouvelle instance de connexion RTCPeerConnection
     const peerConnection = new RTCPeerConnection();
 
-    // Création d'un élément vidéo pour afficher le flux vidéo
-    const videoElement = document.getElementById('local-video');
+    // Création d'un élément vidéo pour afficher le flux vidéo local
+    const localVideoElement = document.getElementById('local-video');
 
-    // Chargement de la vidéo à partir de l'URL spécifiée
-    videoElement.src = videoUrl;
+    // Création d'un élément vidéo pour afficher le flux vidéo distant
+    const remoteVideoElement = document.getElementById('remote-video');
 
-    // Ajout du flux vidéo à la connexion RTCPeerConnection
-    videoElement.addEventListener('loadedmetadata', () => {
-      const stream = videoElement.captureStream();
-      stream.getTracks().forEach((track) => {
-        peerConnection.addTrack(track, stream);
+    // Demande la permission d'accéder à la webcam
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then((stream) => {
+        // Ajout du flux vidéo de la webcam à la connexion RTCPeerConnection
+        stream.getTracks().forEach((track) => {
+          peerConnection.addTrack(track, stream);
+        });
 
-        console.log('Video metadata loaded')
-      });
+        // Affichage du flux vidéo de la webcam dans l'élément vidéo local
+        localVideoElement.srcObject = stream;
 
+        // Événement de réception d'un nouveau candidat ICE
+        peerConnection.onicecandidate = (event) => {
+          if (event.candidate) {
+            // Envoyer le candidat ICE au serveur via Socket.IO
+            socket.emit('iceCandidate', { roomTemp, iceCandidate: event.candidate });
+          }
+        };
 
+        // Événement de réception d'une offre (offer) du serveur
+        socket.on('offer', (offer) => {
+          // Définir la description distante (remote description) de la connexion RTCPeerConnection
+          peerConnection.setRemoteDescription(offer)
+            .then(() => {
+              // Créer une réponse (answer)
+              return peerConnection.createAnswer();
+            })
+            .then((answer) => {
+              // Définir la description locale (local description) de la connexion RTCPeerConnection
+              return peerConnection.setLocalDescription(answer);
+            })
+            .then(() => {
+              // Envoyer la réponse au serveur via Socket.IO
+              socket.emit('answer', { roomTemp, answer: peerConnection.localDescription });
+            })
+            .catch((error) => {
+              console.error('Erreur lors de la création de la réponse :', error);
+            });
+        });
 
-      // Événement de réception d'un nouveau candidat ICE
-      peerConnection.onicecandidate = (event) => {
-        if (event.candidate) {
-          // Envoyer le candidat ICE au serveur via Socket.IO
-          socket.emit('iceCandidate', { roomTemp, iceCandidate: event.candidate });
-          console.log('iceCandidate', { roomTemp, iceCandidate: event.candidate });
+        // Événement de réception d'une réponse (answer) du serveur
+        socket.on('answer', (answer) => {
+          // Définir la description distante (remote description) de la connexion RTCPeerConnection
+          peerConnection.setRemoteDescription(answer)
+            .catch((error) => {
+              console.error('Erreur lors de la définition de la description distante :', error);
+            });
+        });
 
-        }
+        // Événement de réception d'un candidat ICE du serveur
+        socket.on('iceCandidate', (iceCandidate) => {
+          // Ajouter le candidat ICE reçu à la connexion RTCPeerConnection
+          peerConnection.addIceCandidate(iceCandidate)
+            .catch((error) => {
+              console.error('Erreur lors de l\'ajout du candidat ICE :', error);
+            });
+        });
 
-      };
-
-      // Événement de réception d'une offre (offer) du serveur
-      socket.on('offer', (offer) => {
-        console.log('Received demande:', offer)
-        // Définir la description distante (remote description) de la connexion RTCPeerConnection
-        peerConnection.setRemoteDescription(offer)
-          .then(() => {
-            // Créer une réponse (answer)
-            return peerConnection.createAnswer();
-          })
-          .then((answer) => {
+        // Créer une nouvelle offre (offer)
+        peerConnection.createOffer()
+          .then((offer) => {
             // Définir la description locale (local description) de la connexion RTCPeerConnection
-            return peerConnection.setLocalDescription(answer);
+            return peerConnection.setLocalDescription(offer);
           })
           .then(() => {
-            // Envoyer la réponse au serveur via Socket.IO
-            console.log("emit answer")
-            socket.emit('answer', { roomTemp, answer: peerConnection.localDescription });
+            // Envoyer l'offre au serveur via Socket.IO
+            socket.emit('offer', { roomTemp, offer: peerConnection.localDescription });
           })
           .catch((error) => {
-            console.error('Erreur lors de la création de la réponse :', error);
+            console.error('Erreur lors de la création de l\'offre :', error);
           });
+      })
+      .catch((error) => {
+        console.error('Erreur lors de l\'accès à la webcam :', error);
       });
 
-      // Événement de réception d'une réponse (answer) du serveur
-      socket.on('answer', (answer) => {
+    // Fonction pour envoyer une demande de connexion à l'autre utilisateur
+    function sendConnectionRequest() {
+      socket.emit('connectionRequest', { roomTemp });
+    }
 
-        console.log('Received answer:', answer)
-        // Définir la description distante (remote description) de la connexion RTCPeerConnection
-        peerConnection.setRemoteDescription(answer)
-          .catch((error) => {
-            console.error('Erreur lors de la définition de la description distante :', error);
-          });
-      });
-
-      // Événement de réception d'un candidat ICE du serveur
-      socket.on('iceCandidate', (iceCandidate) => {
-        console.log('Received ICE candidate:', iceCandidate)
-        // Ajouter le candidat ICE reçu à la connexion RTCPeerConnection
-        peerConnection.addIceCandidate(iceCandidate)
-          .catch((error) => {
-            console.error('Erreur lors de l\'ajout du candidat ICE :', error);
-          });
-      });
-
+    // Événement de réception d'une demande de connexion de l'autre utilisateur
+    socket.on('connectionRequest', () => {
       // Créer une nouvelle offre (offer)
       peerConnection.createOffer()
         .then((offer) => {
@@ -99,13 +115,57 @@
         })
         .then(() => {
           // Envoyer l'offre au serveur via Socket.IO
-          console.log("emit demand")
           socket.emit('offer', { roomTemp, offer: peerConnection.localDescription });
         })
         .catch((error) => {
           console.error('Erreur lors de la création de l\'offre :', error);
         });
     });
+
+    // Événement de réception d'une offre (offer) de l'autre utilisateur
+    socket.on('offer', (offer) => {
+      // Définir la description distante (remote description) de la connexion RTCPeerConnection
+      peerConnection.setRemoteDescription(offer)
+        .then(() => {
+          // Créer une réponse (answer)
+          return peerConnection.createAnswer();
+        })
+        .then((answer) => {
+          // Définir la description locale (local description) de la connexion RTCPeerConnection
+          return peerConnection.setLocalDescription(answer);
+        })
+        .then(() => {
+          // Envoyer la réponse au serveur via Socket.IO
+          socket.emit('answer', { roomTemp, answer: peerConnection.localDescription });
+        })
+        .catch((error) => {
+          console.error('Erreur lors de la création de la réponse :', error);
+        });
+    });
+
+    // Événement de réception d'une réponse (answer) de l'autre utilisateur
+    socket.on('answer', (answer) => {
+      // Définir la description distante (remote description) de la connexion RTCPeerConnection
+      peerConnection.setRemoteDescription(answer)
+        .catch((error) => {
+          console.error('Erreur lors de la définition de la description distante :', error);
+        });
+    });
+
+    // Événement de réception d'un candidat ICE de l'autre utilisateur
+    socket.on('iceCandidate', (iceCandidate) => {
+      // Ajouter le candidat ICE reçu à la connexion RTCPeerConnection
+      peerConnection.addIceCandidate(iceCandidate)
+        .catch((error) => {
+          console.error('Erreur lors de l\'ajout du candidat ICE :', error);
+        });
+    });
+
+    // Événement de réception du flux vidéo distant
+    peerConnection.ontrack = (event) => {
+      // Affichage du flux vidéo distant dans l'élément vidéo distant
+      remoteVideoElement.srcObject = event.streams[0];
+    };
   </script>
 </body>
 

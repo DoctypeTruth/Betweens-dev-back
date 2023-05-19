@@ -8,6 +8,8 @@ const http = require('http');
 const socketIo = require('socket.io');
 const Message = require('./app/models/message')
 
+const { RTCPeerConnection } = require('wrtc');
+
 const app = express();
 const PORT = process.env.PORT || 5001;
 
@@ -93,26 +95,35 @@ io.on('connection', (socket) => {
   });
 
   // Gestion de l'appel vidéo
-  socket.on('offer', ({ roomTemp, offer }) => {
-    // Envoyer l'offre à l'autre utilisateur de la salle
-    console.log('offer')
-    // socket.to(roomTemp).emit('offer', offer);
-    socket.emit('offer', offer);
+  // Création d'une nouvelle instance de connexion RTCPeerConnection
+  const peerConnection = new RTCPeerConnection();
+  // Fonction asynchrone pour gérer la demande de connexion
+  async function handleConnectionRequest(roomTemp) {
+    console.log('Received connection request from:', socket.id);
+    // Envoyer une offre à l'autre utilisateur de la salle
+    const offer = await peerConnection.createOffer();
+    await peerConnection.setLocalDescription(offer);
+    socket.to(roomTemp).emit('offer', { roomTemp, offer: peerConnection.localDescription });
+  }
+
+  // Événement de réception d'une demande de connexion du client
+  socket.on('connectionRequest', ({ roomTemp }) => {
+    handleConnectionRequest(roomTemp).catch((error) => {
+      console.error('Erreur lors du traitement de la demande de connexion :', error);
+    });
   });
 
   socket.on('answer', ({ roomTemp, answer }) => {
-    console.log('answer')
+    console.log('Received answer:', answer);
     // Envoyer la réponse à l'autre utilisateur de la salle
-    // socket.to(roomTemp).emit('answer', answer);
-    socket.emit('anwser', answer);
+    socket.to(roomTemp).emit('answer', { roomTemp, answer });
   });
 
   // Écouter le candidat ICE émis par le client
   socket.on('iceCandidate', ({ roomTemp, iceCandidate }) => {
-    console.log("iceCandidate")
+    console.log('Received ICE candidate:', iceCandidate);
     // Envoyer le candidat ICE aux autres clients de la salle
-    // socket.to(roomTemp).emit('iceCandidate', iceCandidate);
-    socket.emit('iceCandidate', iceCandidate)
+    socket.to(roomTemp).emit('iceCandidate', { roomTemp, iceCandidate });
   });
 
   socket.on('disconnect', () => {

@@ -35,7 +35,7 @@ const io = socketIo(server, {
 
 
 io.on('connection', (socket) => {
-  console.log('Nouvelle connexion socket :', socket.id);
+  console.log('New socket connection :', socket.id);
 
   // var to stock current room value of the connected user
   let currentRoom = null;
@@ -61,12 +61,13 @@ io.on('connection', (socket) => {
 
       // saved message in the collection
       const savedMessage = await newMessage.save();
-      console.log('Nouveau message enregistré :', newMessage);
+      console.log('New message saved:', newMessage);
 
       // message sent for all connected clients to the room
       io.to(room).emit('message', savedMessage);
+
     } catch (error) {
-      console.error('Erreur lors de l\'enregistrement du message :', error);
+      console.error('Error when saving the messgage :', error);
     }
   });
 
@@ -83,7 +84,7 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
 
-    console.log('Déconnexion socket :', socket.id);
+    console.log('Socket deconnection :', socket.id);
     if (currentRoom) {
       // Disconnect user from the room
       socket.leave(currentRoom);

@@ -24,9 +24,9 @@ router
   .post('/create-match/:matchUserId', authMiddleware, matchController.createMatch)
   .post('/create-user', usersController.createUser);
 
-router.patch('/update-user/:id', authMiddleware, usersController.updateUser);
+router.patch('/update-user', authMiddleware, usersController.updateUser);
 
-router.delete('/delete-user/:id', authMiddleware, usersController.deleteUser);
+router.delete('/delete-user', authMiddleware, usersController.deleteUser);
 
 /* Technologies API page. */
 router.get('/all-techno', technoController.getAllTechnologies);

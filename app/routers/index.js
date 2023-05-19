@@ -6,6 +6,8 @@ const authMiddleware = require('../middlewares/authMiddleware');
 const authController = require('../controllers/authController');
 const matchController = require('../controllers/matchController');
 const messageController = require('../controllers/messageController');
+const chatController = require('../controllers/chatController');
+
 
 /* Login api */
 router.post('/login', authController.login)
@@ -28,5 +30,16 @@ router.delete('/delete-user/:id', authMiddleware, usersController.deleteUser);
 
 /* Technologies API page. */
 router.get('/all-techno', technoController.getAllTechnologies);
+
+/* Chat API */
+router.get('/chat', (req, res) => {
+  // Appel de la fonction handleChatLogic pour gérer la logique du chat
+  chatController.handleChatConnexion(req.app.server);
+  res.send('Chat started');
+});
+
+router.get('/messages/:matchId', chatController.getMessagesByMatchId)
+
+
 
 module.exports = router;

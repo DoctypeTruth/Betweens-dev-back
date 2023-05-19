@@ -1,4 +1,4 @@
-# BetWeenDevs Back-End
+# BetWeenDevs Back-End API
 
 - Read the env-example for the port & db configuration
   
@@ -17,3 +17,4 @@
     "multer": "^1.4.5-lts.1",
     "nodemon": "^2.0.22"
 ```
+

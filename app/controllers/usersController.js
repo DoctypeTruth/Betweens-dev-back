@@ -40,8 +40,8 @@ const usersController = {
         ...speTechnoLookup,
         {
           $match: {
-            // On filtrer par spécialisation
-            "specialization.slug": desiredSpecialization,
+            // On filtrer par spécialisation sinon on revoit tous les utilisateurs
+            ...(desiredSpecialization !== "tout" ? { "specialization.slug": desiredSpecialization } : {}),
             // On exclut l'utilisateur connecté
             _id: { $ne: sessionUser },
             // On exclut les utilisateurs avec qui l'utilisateur connecté a déjà un match

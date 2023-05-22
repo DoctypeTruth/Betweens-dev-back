@@ -180,6 +180,7 @@ const usersController = {
         level,
         goals: {
           _id: goalsInfos._id,
+          slug : goalsInfos.slug,
         },
         technology: technologyInfos.map(techno => { return { _id: techno._id } }),
         specialization: {

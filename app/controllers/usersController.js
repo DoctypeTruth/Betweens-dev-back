@@ -13,7 +13,6 @@ let lastUserId = null;
 const usersController = {
   /** Get all users function */
   getAllUsers: async (_req, res) => {
-    console.log("je lance la route get all users")
     try {
       // The aggregate operation allow to process data operations on one a or multiple
       // collection
@@ -99,6 +98,7 @@ const usersController = {
 
       const { error } = validationDataForm.validate(req.body, {
         abortEarly: false,
+        // Set the context to true to apply the password verification when we create a user
         context: { isCreatingUser: true },
       });
       if (error) {
@@ -152,7 +152,7 @@ const usersController = {
 
   updateUser: async (req, res) => {
     try {
-      
+
       const userId = req.user._id;
       const { pseudo, email, city, picture, password, description, status, level, goals, technology, specialization } = req.body;
 

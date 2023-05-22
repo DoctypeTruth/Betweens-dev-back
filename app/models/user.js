@@ -28,10 +28,11 @@ const userSchema = new mongoose.Schema({
   goals: {
     _id: {
       type: mongoose.Schema.Types.String,
-      ref: 'Specialization'
+      ref: 'Specialization',
+      required: true
     },
     name: String,
-    slug: String
+    slug: String,
   },
   technology: [{
     _id: {
@@ -43,10 +44,11 @@ const userSchema = new mongoose.Schema({
   specialization: {
     _id: {
       type: mongoose.Schema.Types.String,
-      ref: 'Specialization'
+      ref: 'Specialization',
+      required: true,
     },
     name: String,
-    slug: String
+    slug: String,
   },
   match: [
     {

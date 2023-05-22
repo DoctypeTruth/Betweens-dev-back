@@ -87,7 +87,6 @@ const usersController = {
     try {
 
       const { pseudo, email, city, picture, password, description, status, level, goals, technology, specialization } = req.body;
-      console.log(req.body);
       // Check if the username or email already exist
       let user = await User.findOne({ $or: [{ pseudo }, { email }] });
       if (user) {
@@ -96,9 +95,12 @@ const usersController = {
 
       // AbortEarly is an option that specifies to stop when he encounter the first error.
       // By default its set to true. If you set it to false, the validation will continue and
-      // return all errors.
-      console.log(req.method);
-      const { error } = validationDataForm.validate(req.body, { abortEarly: false, isCreatingUser: req.method === 'POST' ? true : false });
+      // return all errors
+
+      const { error } = validationDataForm.validate(req.body, {
+        abortEarly: false,
+        context: { isCreatingUser: true },
+      });
       if (error) {
         return res.status(400).json({ message: error.details });
       }
@@ -149,13 +151,15 @@ const usersController = {
   },
 
   updateUser: async (req, res) => {
-
     try {
+      
       const userId = req.user._id;
-
       const { pseudo, email, city, picture, password, description, status, level, goals, technology, specialization } = req.body;
 
-      const { error } = validationDataForm.validate(req.body, { abortEarly: false, isCreatingUser: req.method === 'POST' ? true : false });
+      const { error } = validationDataForm.validate(req.body, {
+        abortEarly: false,
+        context: { isCreatingUser: false },
+      });
 
       if (error) {
         return res.status(400).json({ message: error.details });

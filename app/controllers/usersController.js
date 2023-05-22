@@ -89,7 +89,7 @@ const usersController = {
       // Check if the username or email already exist
       let user = await User.findOne({ $or: [{ pseudo }, { email }] });
       if (user) {
-        return res.status(400).json({ message: 'Username or email already exist' });
+        return res.status(400).json({ message: "Le pseudo ou l'email existe déjà" });
       }
 
       // AbortEarly is an option that specifies to stop when he encounter the first error.
@@ -198,7 +198,6 @@ const usersController = {
 
       const updatedUser = await User.findOneAndUpdate({ _id: userId }, { $set: updateData }, { new: true, runValidators: true });
       if (updatedUser) {
-        console.log('User updated successfully:', updatedUser);
         res.status(200).json(updatedUser);
       } else {
         res.status(404).json({ error: 'User not found.' });
@@ -214,7 +213,6 @@ const usersController = {
       const userId = req.user._id;
       const result = await User.deleteOne({ _id: userId });
       if (result.deletedCount === 1) {
-        console.log('User successfully deleted');
         res.status(204).json();
       } else {
         res.status(404).json({ error: 'User not found.' });

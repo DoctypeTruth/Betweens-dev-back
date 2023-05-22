@@ -1,19 +1,19 @@
 const Joi = require('joi');
 
 const validationDataForm = Joi.object({
-  pseudo: Joi.string().min(3).max(30).required(),
+  pseudo: Joi.string().min(3).max(30).required().messages({'string.empty': 'Le pseudo est manquant'}),
   email: Joi.string().email().required().pattern(
     // This regex ensure that the email address that starts with one or more characters
     // then followed by the "@" symbol, then one or more characters, then followed by the
     // "." symbol, then two or three characters from the alphabet.
     /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,63}$/,
-  ),
+  ).messages({"string.empty" : "L'email est invalide"}),
   city: Joi.string(),
   picture: Joi.string(),
   // When isCreatingUser is true, password is require else optional
   password: Joi.when('$isCreatingUser', {
     is: true,
-    then: Joi.string().min(4).max(30).required(),
+    then: Joi.string().min(4).max(30).required().messages({'string.empty': 'Le mot de passe est manquant'}),
     otherwise: Joi.string().allow(null).optional(),
   }),
   // .pattern(
@@ -25,16 +25,16 @@ const validationDataForm = Joi.object({
   confirmPassword: Joi.when('$isCreatingUser', {
     is: true,
     then: Joi.string().valid(Joi.ref('password')).required().messages({
-      'any.only': 'Passwords do not match',
+      'any.only': 'Le mot de passe ne correspond pas',
     }),
     otherwise: Joi.string().allow(null).optional(),
   }),
   description: Joi.string(),
   status: Joi.string(),
   level: Joi.string(),
-  goals: Joi.string().required(),
+  goals: Joi.string().required().messages({'string.empty': 'Vous devez selectionner un type de profil'}),
   technology: Joi.array(),
-  specialization: Joi.string().required(),
+  specialization: Joi.string().required().messages({'string.empty': 'Vous devez selectionner une spécialisation'}),
 }
 );
 

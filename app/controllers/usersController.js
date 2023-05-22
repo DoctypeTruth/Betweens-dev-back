@@ -19,7 +19,6 @@ const usersController = {
       const users = await User.aggregate(speTechnoLookup);
 
       if (users.length > 0) {
-        console.log('Users retrieved successfully');
         res.status(200).json(users);
       } else {
         res.status(404).json({ error: 'No users found.' });

@@ -33,7 +33,7 @@ const validationDataForm = Joi.object({
   status: Joi.string().allow('').optional(),
   level: Joi.string().allow('').optional(),
   goals: Joi.string().required().messages({'string.empty': 'Vous devez selectionner un type de profil'}),
-  technology: Joi.array().optional(),
+  technology: Joi.array().empty().optional(),
   specialization: Joi.string().required().messages({'string.empty': 'Vous devez selectionner une spécialisation'}),
 }
 );

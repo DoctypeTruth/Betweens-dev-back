@@ -104,8 +104,11 @@ const usersController = {
         return res.status(400).json({ message: error.details });
       }
 
-      // We get labels sent by the front
-      const labels = technology.map(t => t.label);
+      const labels = null ;
+      if (technology) {
+        // We get labels sent by the front
+        labels = technology.map(t => t.label);
+      }
 
       // We use the $in, the comparaison operator to find technology associated to the
       // name (labels) 

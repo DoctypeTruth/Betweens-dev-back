@@ -30,11 +30,57 @@ const usersController = {
   },
 
   // Here the function allow us to retrieve one user by their specialization
+  // getOneUserBySpecilization: async (req, res) => {
+  //   try {
+  //     const desiredSpecialization = req.params.slug;
+  //     const sessionUser = req.user._id;
+  //     const matches = await Match.find({ $or: [{ user1_id: sessionUser }, { user2_id: sessionUser }], accepted: true }).select('user1_id user2_id -_id');
+  //     const matchUserIds = matches.flatMap(match => [match.user1_id, match.user2_id]);
+  //     const users = await User.aggregate([
+  //       ...speTechnoLookup,
+  //       {
+  //         $match: {
+  //           // On filtrer par spécialisation sinon on revoit tous les utilisateurs
+  //           ...(desiredSpecialization !== "tout" ? { "specialization.slug": desiredSpecialization } : {}),
+  //           // On exclut l'utilisateur connecté
+  //           _id: { $ne: sessionUser },
+  //           // On exclut les utilisateurs avec qui l'utilisateur connecté a déjà un match
+  //           // validé & le dernier utilisateur affiché dans la recherche.
+  //           $nor: [
+  //             { _id: { $in: matchUserIds } },
+  //             { $and: [{ _id: { $ne: sessionUser } }, { _id: lastUserId }] }
+  //           ]
+  //         }
+  //       },
+  //       { $sample: { size: 1 } } // get a single random document
+  //     ]);
+
+  //     if (users.length === 0) {
+  //       res.status(404).json({ error: 'No users found.' });
+  //     } else {
+  //       // Returns the first (and single) document in the array
+  //       lastUserId = users[0]._id;
+  //       res.status(200).json(users[0]);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error getting users:', error);
+  //     res.status(500).json({ error: 'Failed to get user by specialization.' });
+  //   }
+  // },
+
   getOneUserBySpecilization: async (req, res) => {
     try {
       const desiredSpecialization = req.params.slug;
       const sessionUser = req.user._id;
-      const matches = await Match.find({ $or: [{ user1_id: sessionUser }, { user2_id: sessionUser }], accepted: true }).select('user1_id user2_id -_id');
+      const matches = await Match.find({
+        $or: [{ user1_id: sessionUser }, { user2_id: sessionUser }],
+        accepted: true,
+        $or: [
+          { "blocked": false },
+          { "user1_id": { $ne: sessionUser } },
+          { "user2_id": { $ne: sessionUser } }
+        ]
+      }).select('user1_id user2_id -_id');
       const matchUserIds = matches.flatMap(match => [match.user1_id, match.user2_id]);
       const users = await User.aggregate([
         ...speTechnoLookup,
@@ -67,6 +113,7 @@ const usersController = {
       res.status(500).json({ error: 'Failed to get user by specialization.' });
     }
   },
+
 
   getUserById: async (req, res) => {
     try {
@@ -104,7 +151,7 @@ const usersController = {
         return res.status(400).json({ message: error.details });
       }
 
-      const labels = null ;
+      const labels = null;
       if (technology) {
         // We get labels sent by the front
         labels = technology.map(t => t.label);
@@ -183,7 +230,7 @@ const usersController = {
         level,
         goals: {
           _id: goalsInfos._id,
-          slug : goalsInfos.slug,
+          slug: goalsInfos.slug,
         },
         technology: technologyInfos.map(techno => { return { _id: techno._id } }),
         specialization: {

@@ -9,7 +9,7 @@ const speTechnoLookup = require('../utils/speTechnoLookup')
 
 
 let lastUserId = null;
-
+let displayedProfiles = [];
 const usersController = {
   /** Get all users function */
   getAllUsers: async (_req, res) => {
@@ -30,44 +30,6 @@ const usersController = {
   },
 
   // Here the function allow us to retrieve one user by their specialization
-  // getOneUserBySpecilization: async (req, res) => {
-  //   try {
-  //     const desiredSpecialization = req.params.slug;
-  //     const sessionUser = req.user._id;
-  //     const matches = await Match.find({ $or: [{ user1_id: sessionUser }, { user2_id: sessionUser }], accepted: true }).select('user1_id user2_id -_id');
-  //     const matchUserIds = matches.flatMap(match => [match.user1_id, match.user2_id]);
-  //     const users = await User.aggregate([
-  //       ...speTechnoLookup,
-  //       {
-  //         $match: {
-  //           // On filtrer par spécialisation sinon on revoit tous les utilisateurs
-  //           ...(desiredSpecialization !== "tout" ? { "specialization.slug": desiredSpecialization } : {}),
-  //           // On exclut l'utilisateur connecté
-  //           _id: { $ne: sessionUser },
-  //           // On exclut les utilisateurs avec qui l'utilisateur connecté a déjà un match
-  //           // validé & le dernier utilisateur affiché dans la recherche.
-  //           $nor: [
-  //             { _id: { $in: matchUserIds } },
-  //             { $and: [{ _id: { $ne: sessionUser } }, { _id: lastUserId }] }
-  //           ]
-  //         }
-  //       },
-  //       { $sample: { size: 1 } } // get a single random document
-  //     ]);
-
-  //     if (users.length === 0) {
-  //       res.status(404).json({ error: 'No users found.' });
-  //     } else {
-  //       // Returns the first (and single) document in the array
-  //       lastUserId = users[0]._id;
-  //       res.status(200).json(users[0]);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error getting users:', error);
-  //     res.status(500).json({ error: 'Failed to get user by specialization.' });
-  //   }
-  // },
-
   getOneUserBySpecilization: async (req, res) => {
     try {
       const desiredSpecialization = req.params.slug;
@@ -86,26 +48,28 @@ const usersController = {
         ...speTechnoLookup,
         {
           $match: {
-            // On filtrer par spécialisation sinon on revoit tous les utilisateurs
             ...(desiredSpecialization !== "tout" ? { "specialization.slug": desiredSpecialization } : {}),
-            // On exclut l'utilisateur connecté
             _id: { $ne: sessionUser },
-            // On exclut les utilisateurs avec qui l'utilisateur connecté a déjà un match
-            // validé & le dernier utilisateur affiché dans la recherche.
             $nor: [
               { _id: { $in: matchUserIds } },
-              { $and: [{ _id: { $ne: sessionUser } }, { _id: lastUserId }] }
+              { $and: [{ _id: { $ne: sessionUser } }, { _id: lastUserId }] },
+              { _id: { $in: displayedProfiles } }
             ]
           }
         },
-        { $sample: { size: 1 } } // get a single random document
+        { $sample: { size: 1 } }
       ]);
 
       if (users.length === 0) {
         res.status(404).json({ error: 'No users found.' });
       } else {
-        // Returns the first (and single) document in the array
         lastUserId = users[0]._id;
+        if (displayedProfiles.length === 10) {
+          // Delete the first profile of the array
+          displayedProfiles.shift();
+        }
+        // Adding the last displayed profile to the array
+        displayedProfiles.push(lastUserId);
         res.status(200).json(users[0]);
       }
     } catch (error) {

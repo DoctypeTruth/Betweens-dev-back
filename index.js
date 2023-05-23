@@ -33,65 +33,88 @@ const io = socketIo(server, {
   },
 });
 
+// // Middleware de validation du jeton JWT
+// const jwt = require('jsonwebtoken');
 
-io.on('connection', (socket) => {
-  console.log('New socket connection :', socket.id);
+// io.use((socket, next) => {
+//   const token = socket.handshake.auth.token;
 
-  // var to stock current room value of the connected user
-  let currentRoom = null;
+//   console.log("token", token);
 
-  // listen message of users
-  socket.on('sendMessageToRoom', async ({ room, data }) => {
-    console.log(data);
-    const message = data.message;
-    const date = data.date;
-    const senderId = data.senderId;
-    const receiverId = data.receiverId;
-    const matchId = data.matchId;
+//   // Vérifier et valider le jeton JWT
+//   try {
+//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    try {
-      // creating new instance of received data
-      const newMessage = new Message({
-        message,
-        date,
-        senderId,
-        receiverId,
-        matchId,
-      });
+//     // Si le jeton est valide, vous pouvez stocker les informations de l'utilisateur dans l'objet socket pour une utilisation ultérieure
+//     socket.user = decoded; // Stockez les informations de l'utilisateur extraites du jeton JWT dans socket.user
 
-      // saved message in the collection
-      const savedMessage = await newMessage.save();
-      console.log('New message saved:', newMessage);
+//     // Appeler next() pour autoriser la connexion
+//     next();
+//   } catch (error) {
+//     // Si le jeton n'est pas valide, vous pouvez renvoyer une erreur ou refuser la connexion
+//     next(new Error('Invalid token'));
+//   }
+// });
 
-      // message sent for all connected clients to the room
-      io.to(room).emit('message', savedMessage);
 
-    } catch (error) {
-      console.error('Error when saving the messgage :', error);
-    }
-  });
+// io.on('connection', (socket) => {
+//   console.log('New socket connection :', socket.id);
 
-  socket.on('joinRoom', (room) => {
-    if (currentRoom) {
-      // Leave current room
-      socket.leave(currentRoom);
-    }
-    // Join new room
-    socket.join(room);
-    // updated current room of connected user
-    currentRoom = room;
-  });
+//   // var to stock current room value of the connected user
+//   let currentRoom = null;
 
-  socket.on('disconnect', () => {
+//   // listen message of users
+//   socket.on('sendMessageToRoom', async ({ room, data }) => {
+//     console.log(data);
+//     const message = data.message;
+//     const date = data.date;
+//     const senderId = data.senderId;
+//     const receiverId = data.receiverId;
+//     const matchId = data.matchId;
 
-    console.log('Socket deconnection :', socket.id);
-    if (currentRoom) {
-      // Disconnect user from the room
-      socket.leave(currentRoom);
-    }
-    currentRoom = null;
-  });
-});
+//     try {
+//       // creating new instance of received data
+//       const newMessage = new Message({
+//         message,
+//         date,
+//         senderId,
+//         receiverId,
+//         matchId,
+//       });
+
+//       // saved message in the collection
+//       const savedMessage = await newMessage.save();
+//       console.log('New message saved:', newMessage);
+
+//       // message sent for all connected clients to the room
+//       io.to(room).emit('message', savedMessage);
+
+//     } catch (error) {
+//       console.error('Error when saving the messgage :', error);
+//     }
+//   });
+
+//   socket.on('joinRoom', (room) => {
+//     if (currentRoom) {
+//       // Leave current room
+//       socket.leave(currentRoom);
+//     }
+//     // Join new room
+//     socket.join(room);
+//     // updated current room of connected user
+//     currentRoom = room;
+//   });
+
+//   socket.on('disconnect', () => {
+
+//     console.log('Socket deconnection :', socket.id);
+//     if (currentRoom) {
+//       // Disconnect user from the room
+//       socket.leave(currentRoom);
+//     }
+//     currentRoom = null;
+//   });
+// });
 
 
 // We use .none() to specify when file is not expected, only classic inputs.

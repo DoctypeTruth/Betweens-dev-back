@@ -22,7 +22,7 @@ router
 
 router
   .post('/create-match/:matchUserId', authMiddleware, matchController.createMatch)
-  .post('/block-match/:matchId', authMiddleware, matchController.blockMatch)
+  .patch('/block-match/:matchId', authMiddleware, matchController.blockMatch)
   .post('/create-user', usersController.createUser);
 
 router.patch('/update-user', authMiddleware, usersController.updateUser);

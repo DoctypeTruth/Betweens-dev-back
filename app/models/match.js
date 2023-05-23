@@ -22,7 +22,11 @@ const matchSchema = new mongoose.Schema({
   accepted: {
     type: Boolean,
     default: false
-  }
+  },
+  blocked: {
+    type: Boolean,
+    default: false
+  } 
 });
 
 const Match = mongoose.model('Match', matchSchema, 'match');

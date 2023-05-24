@@ -164,26 +164,26 @@ const matchController = {
     const { matchId } = req.params;
 
     try {
-        
+
       const acceptedMatch = await Match.findOne({ _id: matchId, accepted: true });
 
-        if (!acceptedMatch) {
-          return res.status(400).json({ error: "You cannot block a match that is not accepted." });
-        }
-        // We block the match
-        await Match.findByIdAndUpdate(acceptedMatch._id, { blocked: true, accepted: false });
-        const users = await User.find({ "match._id": matchId });
-        users.forEach(async (user) => {
-          await User.updateOne(
-            { _id: user._id },
-            { $pull: { match: { _id: matchId } } }
-          );
-        });
-        return res.status(200).json({ message: "Match blocked successfully!"});
+      if (!acceptedMatch) {
+        return res.status(400).json({ error: "You cannot block a match that is not accepted." });
       }
+      // We block the match
+      await Match.findByIdAndUpdate(acceptedMatch._id, { blocked: true });
+      const users = await User.find({ "match._id": matchId });
+      users.forEach(async (user) => {
+        await User.updateOne(
+          { _id: user._id },
+          { $pull: { match: { _id: matchId } } }
+        );
+      });
+      return res.status(200).json({ message: "Match blocked successfully!" });
+    }
     catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error while blocking the match' });
+      console.error(error);
+      res.status(500).json({ error: 'Server error while blocking the match' });
     }
   }
 }

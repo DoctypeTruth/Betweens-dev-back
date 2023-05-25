@@ -22,10 +22,10 @@ router
 
 router
   .post('/create-match/:matchUserId', authMiddleware, matchController.createMatch)
-  .patch('/block-match/:matchId', authMiddleware, matchController.blockMatch)
+  .put('/block-match/:matchId', authMiddleware, matchController.blockMatch)
   .post('/create-user', usersController.createUser);
 
-router.patch('/update-user', authMiddleware, usersController.updateUser);
+router.put('/update-user', authMiddleware, usersController.updateUser);
 
 router.delete('/delete-user', authMiddleware, usersController.deleteUser);
 

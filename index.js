@@ -18,6 +18,14 @@ app.get('/', (_req, res) => {
   res.send('Api betweenDevs Launched')
 });
 
+app.get("/upload", (req, res) => {
+  res.render("uploads/");
+});
+
+app.post("/upload", (req, res) => {
+  res.render("Image uploaded successfully");
+});
+
 app.get('/socket-test', (_req, res) => {
   res.sendFile(__dirname + '/socket-test.html');
 });

@@ -17,7 +17,13 @@ const userSchema = new mongoose.Schema({
     unique: true
   },
   city: String,
-  picture: String,
+  picture: {
+    _id: {
+      type: mongoose.Schema.Types.String,
+      ref: 'Picture',
+      required: true,
+    },
+  },
   password: {
     type: String,
     required: true

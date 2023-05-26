@@ -6,7 +6,9 @@ const authMiddleware = require('../middlewares/authMiddleware');
 const authController = require('../controllers/authController');
 const matchController = require('../controllers/matchController');
 const messageController = require('../controllers/messageController');
+const pictureController = require('../controllers/pictureController');
 const chatController = require('../controllers/chatController');
+const upload = require('../middlewares/upload');
 
 
 /* Login api */
@@ -22,10 +24,12 @@ router
 
 router
   .post('/create-match/:matchUserId', authMiddleware, matchController.createMatch)
-  .patch('/block-match/:matchId', authMiddleware, matchController.blockMatch)
-  .post('/create-user', usersController.createUser);
+  .post('/create-user', usersController.createUser)
+  .post('/image', upload.single('image'), pictureController.postPicture);
 
-router.patch('/update-user', authMiddleware, usersController.updateUser);
+router
+  .patch('/update-user', authMiddleware, usersController.updateUser)
+  .patch('/block-match/:matchId', authMiddleware, matchController.blockMatch)
 
 router.delete('/delete-user', authMiddleware, usersController.deleteUser);
 

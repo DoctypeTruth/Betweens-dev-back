@@ -173,7 +173,14 @@ const usersController = {
       if (error) {
         return res.status(400).json({ message: error.details });
       }
-      const labels = technology.map(t => t.label);
+      // const labels = technology.map(t => t.label);
+
+      const labels = null;
+      if (technology) {
+        // We get labels sent by the front
+        labels = technology.map(t => t.label);
+      }
+
       const technologyInfos = await Technology.find({ name: { $in: labels } });
 
       const specializationInfos = await Specialization.findOne({ name: specialization });

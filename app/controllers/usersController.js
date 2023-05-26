@@ -29,33 +29,58 @@ const usersController = {
     }
   },
 
-  // Here the function allow us to retrieve one user by their specialization
   getOneUserBySpecilization: async (req, res) => {
     try {
       const desiredSpecialization = req.params.slug;
       const sessionUser = req.user._id;
-      const matches = await Match.find({ $or: [{ user1_id: sessionUser }, { user2_id: sessionUser }] }).select('user1_id user2_id -_id');
-      const matchUserIds = matches.flatMap(match => [match.user1_id, match.user2_id]);
+      
+      // get connected user information, specifically match and pendingMatch array
+      const currentUser = await User.findById(sessionUser).select('match pendingMatch');
+  
+      // create an array with all match ids for the connected user
+      const userMatchIds = currentUser.match.map(match => match._id && match._id.toString());
+  
+      // create an array with all users ids in match array for the connected user
+      const userMatches = await Match.find({
+        $or: [{ user1_id: sessionUser }, { user2_id: sessionUser }],
+        $nor: [
+          { user1_id: { $in: userMatchIds } },
+          { user2_id: { $in: userMatchIds } }
+        ]
+      }).select('user1_id user2_id');
+  
+      const userMatchUserIds = userMatches.flatMap(match => [
+        match.user1_id && match.user1_id.toString(),
+        match.user2_id && match.user2_id.toString()
+      ]);
+  
+      // get users in pending match array
+      const usersInPendingMatch = currentUser.pendingMatch.map(id => id._id.toString());
+      
+      // Filtered users to exclude from the search
+      const filteredUsersToExclude = userMatchUserIds.filter(userId => !usersInPendingMatch.includes(userId));
+  
       const users = await User.aggregate([
         ...speTechnoLookup,
         {
           $match: {
-            // On filtrer par spécialisation sinon on revoit tous les utilisateurs
-            ...(desiredSpecialization !== "tout" ? { "specialization.slug": desiredSpecialization } : {}),
-            // On exclut l'utilisateur connecté
-            _id: { $ne: sessionUser },
-            // On exclut les utilisateurs avec qui l'utilisateur connecté a déjà un match
-            // validé & le dernier utilisateur affiché dans la recherche.
-            $nor: [
-              { _id: { $in: matchUserIds } },
-              { $and: [{ _id: { $ne: sessionUser } }, { _id: lastUserId }] },
-              { _id: { $in: displayedProfiles } }
-            ]
+            $or: [
+              ...(desiredSpecialization !== "tout" ? [{ "specialization.slug": desiredSpecialization }] : []),
+              {
+                $and: [
+                  { _id: { $in: usersInPendingMatch } },
+                  { "specialization.slug": desiredSpecialization }
+                ]
+              }
+            ],
+            _id: { $ne: sessionUser }, // exclude the connected user
+            _id: { $nin: filteredUsersToExclude }, // exclude users we have had a match with
+            _id: { $nin: displayedProfiles } // exclude the last 10 displayed users.
           }
         },
-        { $sample: { size: 1 } } // get a single random document
+        { $sample: { size: 1 } }
       ]);
-
+  
       if (users.length === 0) {
         res.status(404).json({ error: 'No users found.' });
       } else {
@@ -73,6 +98,8 @@ const usersController = {
       res.status(500).json({ error: 'Failed to get user by specialization.' });
     }
   },
+  
+
 
 
   getUserById: async (req, res) => {

@@ -56,10 +56,11 @@ const usersController = {
   
       // get users in pending match array
       const usersInPendingMatch = currentUser.pendingMatch.map(id => id._id.toString());
-      
+      console.log('usersInPendingMatch', usersInPendingMatch);
       // Filtered users to exclude from the search
       const filteredUsersToExclude = userMatchUserIds.filter(userId => !usersInPendingMatch.includes(userId));
-  
+      console.log('filteredUsersToExclude', filteredUsersToExclude);
+
       const users = await User.aggregate([
         ...speTechnoLookup,
         {
@@ -74,8 +75,8 @@ const usersController = {
               }
             ],
             _id: { $ne: sessionUser }, // exclude the connected user
+            _id: { $nin: displayedProfiles }, // exclude the last 10 displayed users.
             _id: { $nin: filteredUsersToExclude }, // exclude users we have had a match with
-            _id: { $nin: displayedProfiles } // exclude the last 10 displayed users.
           }
         },
         { $sample: { size: 1 } }
@@ -138,7 +139,7 @@ const usersController = {
         return res.status(400).json({ message: error.details });
       }
 
-      const labels = null;
+      let labels = null;
       if (technology) {
         // We get labels sent by the front
         labels = technology.map(t => t.label);
@@ -200,7 +201,7 @@ const usersController = {
       if (error) {
         return res.status(400).json({ message: error.details });
       }
-      const labels = null;
+      let labels = null;
       if (technology) {
         // We get labels sent by the front
         labels = technology.map(t => t.label);

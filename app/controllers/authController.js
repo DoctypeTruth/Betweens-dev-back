@@ -8,8 +8,8 @@ const authController = {
   login: async (req, res) => {
     const { email, password } = req.body;
     try {
-      // We get the user from the database
 
+      // We get the user from the database
       const user = await User.aggregate(speTechnoLookup).match({ email });
 
       // We check if the user exists and if the password is correct
@@ -29,5 +29,6 @@ const authController = {
     }
   }
 }
+
 
 module.exports = authController;

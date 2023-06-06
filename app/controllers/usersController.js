@@ -23,6 +23,7 @@ const usersController = {
       } else {
         res.status(404).json({ error: 'No users found.' });
       }
+
     } catch (error) {
       console.error('Error getting users:', error);
       res.status(500).json({ error: 'Failed to get all users.' });
@@ -241,6 +242,7 @@ const usersController = {
       } else {
         res.status(404).json({ error: 'User not found.' });
       }
+
     } catch (error) {
       console.error('Error updating user:', error);
       res.status(500).json({ error: 'Failed to update user.' });
@@ -256,6 +258,7 @@ const usersController = {
       } else {
         res.status(404).json({ error: 'User not found.' });
       }
+      
     } catch (error) {
       console.error('Error deleting user:', error);
       res.status(500).json({ error: 'Failed to delete the user.' });

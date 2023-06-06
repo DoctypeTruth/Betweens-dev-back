@@ -27,11 +27,11 @@ const chatController = {
 
   getMessagesByMatchId: async (req, res) => {
     try {
+
       const matchId = req.params.matchId;
-
       const messages = await Message.find({ matchId });
-
       res.json(messages);
+      
     } catch (error) {
       console.error('Erreur lors de la récupération des messages :', error);
       res.status(500).json({ error: 'Une erreur s\'est produite lors de la récupération des messages.' });

@@ -1,7 +1,5 @@
 const Technology = require('../models/technology.js');
 
-
-
 const technoController = {
 
     // GET all technologies

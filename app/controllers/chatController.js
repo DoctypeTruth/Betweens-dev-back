@@ -1,4 +1,3 @@
-
 const socketIo = require('socket.io');
 const Message = require('../models/message');
 
@@ -21,7 +20,6 @@ const chatController = {
       socket.on('disconnect', () => {
         console.log('Déconnexion socket :', socket.id);
       });
-
 
       socket.emit('connexion-établie', socket.id);
     });

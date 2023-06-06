@@ -3,7 +3,6 @@ const speTechnoLookup = require('../utils/speTechnoLookup')
 const generateJwt = require('../utils/generateJWT');
 const checkPassword = require('../utils/checkPassword');
 
-
 const authController = {
 
   login: async (req, res) => {
@@ -20,7 +19,6 @@ const authController = {
 
       // We generate a JWT token for the user
       const token = generateJwt(user[0]);
-
 
       // We send the JWT token in the response with status 200 and other informations
       res.status(200).json({ token, userId: user[0]._id, goalsSlug: user[0].goals.slug });

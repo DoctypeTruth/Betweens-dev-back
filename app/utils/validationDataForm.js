@@ -14,14 +14,14 @@ const validationDataForm = Joi.object({
   password: Joi.when('$isCreatingUser', {
     is: true,
     then: Joi.string().min(4).max(30).required().messages({'string.empty': 'Le mot de passe est manquant'}),
-    otherwise: Joi.string().allow(null).optional(),
-  }),
-  // .pattern(
-  //   // This regex ensure that the password contains at least one lowercase and uppercase
-  //   // letter, one digit, one special character. It also make sure the  minimum length
-  //   // of 8 characters
-  //   /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/,
-  // ),
+    otherwise: Joi.string().allow(null).optional()
+  
+  .pattern(
+     // This regex ensure that the password contains at least one lowercase and uppercase
+     // letter, one digit, one special character. It also make sure the  minimum length
+     // of 8 characters
+     /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/,
+  )}),
   confirmPassword: Joi.when('$isCreatingUser', {
     is: true,
     then: Joi.string().valid(Joi.ref('password')).required().messages({

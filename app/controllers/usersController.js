@@ -99,9 +99,6 @@ const usersController = {
       res.status(500).json({ error: 'Failed to get user by specialization.' });
     }
   },
-  
-
-
 
   getUserById: async (req, res) => {
     try {

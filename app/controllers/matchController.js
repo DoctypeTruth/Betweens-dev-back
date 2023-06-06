@@ -119,7 +119,6 @@ const matchController = {
   },
 
   checkPendingMatch: async (userId, matchUserId) => {
-
     try {
 
       // We check if there is a pending match for the proposed user
